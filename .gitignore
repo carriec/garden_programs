@@ -39,3 +39,4 @@ rsconnect/
 
 # ICPSR data
 data/icpsr_data/
+data/raw_data/
