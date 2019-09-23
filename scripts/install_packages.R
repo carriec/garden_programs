@@ -4,4 +4,5 @@ library(devtools)
 install_github("fsolt/icpsrdata")
 
 #Install packages from CRAN
-install.packages(c("googledrive", "dplyr"))
+install.packages(c("googledrive", "tidyverse", "readxl"))
+###install.packages("dplyr") -- included in tidyverse
