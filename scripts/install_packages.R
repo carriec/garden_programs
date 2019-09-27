@@ -12,3 +12,6 @@ install.packages(c("googledrive", "readxl", "tidyverse"))
 ###brew install gdal
 ###brew install pkg-config
 install.packages("tidycensus")
+
+#Packages for mapmaking / visualization with ggplot2
+install.packages("maps")
