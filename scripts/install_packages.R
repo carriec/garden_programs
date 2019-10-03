@@ -15,3 +15,9 @@ install.packages("tidycensus")
 
 #Packages for mapmaking / visualization with ggplot2
 install.packages("maps")
+install.packages("geojsonR")
+install.packages("tmaptools")
+
+install.packages("RCurl")
+
+install.packages("xaringan")
