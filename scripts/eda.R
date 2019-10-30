@@ -208,5 +208,16 @@ da36128.0001.temp <-
 view(da24642.0001 %>%
   filter(V1 == "440000000075500000000"))
 
-
+#ICPSR quick highlevel plots
+a <- ggplot(data = da24642.0001, aes(V7, ..count..)) +
+  geom_bar(aes(fill = V208))
+a
+b <- ggplot(data = da24642.0001, aes(V7, ..count..)) +
+  geom_bar(aes(fill = V208)) +
+  facet_wrap(~ V22)
+b
+c <- ggplot(data = da24642.0001, aes(V7, ..count..)) +
+  geom_bar(aes(fill = V208)) +
+  facet_wrap(~ V23)
+c
 
