@@ -22,8 +22,15 @@ drive_download(
   overwrite = TRUE)
 
 #Import Josh's spreadsheets
-josh <- drive_get(as_id("INSERT HERE"))
+josh <- drive_get(as_id("https://docs.google.com/spreadsheets/d/1pVtJQkMAeilikn-tXe-zT4_NnaujyaXh"))
 drive_download(
-  file = as_id("INSERT HERE"), 
+  file = as_id("https://docs.google.com/spreadsheets/d/1pVtJQkMAeilikn-tXe-zT4_NnaujyaXh"), 
   path = "./data/raw_data/Correctional_Facility_Contact_Tracking_Josh_States_SUMMER.xlsx",
+  overwrite = TRUE)
+
+#Import Carrie's spreadsheets
+carrie <- drive_get(as_id("https://docs.google.com/spreadsheets/d/1xFcgV5AbYpa7LFnanFMSU18KCRUwAvCsaQyx1zUkpio"))
+drive_download(
+  file = as_id("https://docs.google.com/spreadsheets/d/1xFcgV5AbYpa7LFnanFMSU18KCRUwAvCsaQyx1zUkpio"),
+  path = ".data/raw_data/Correctional_Facility_Contact_Tracking_Carrie_States.xlsx",
   overwrite = TRUE)
