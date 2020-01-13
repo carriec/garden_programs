@@ -1,5 +1,5 @@
 ---
-title: "Food Production Data"
+title: "Correctional Facility Ag and Gardening Data"
 #subtitle: "⚔<br/>with xaringan"
 #author: "Carrie Chennault"
 #institute: ""
@@ -105,7 +105,10 @@ Readable, e.g.
 - ok to keep color-coding (but it will not be read into software)
 - move any color-coding keys to another spreadsheet tab entitled "Keys"
 - in addition, make sure you have a column entitled "Confirmed Program", inserted after "Name of Correctional Facility"
-- Our lab group has decided what values to record in the column "Confirmed Programs": 1 = confirmed that program(s) are at that facility, 0 = confirmed that *no* programs are at that facility, null (empty) = unconfirmed/yet to confirm
+- Our lab group has decided what values to record in the column "Confirmed Programs": 
+1 = confirmed that program(s) are at that facility; 
+0 = confirmed that *no* programs are at that facility; and 
+null (empty) = unconfirmed / found published info about program but yet to receive official confirmation
 
 ---
 
@@ -125,5 +128,3 @@ class: center, middle
 # Thanks!
 
 Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
-
-The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](http://yihui.name/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
