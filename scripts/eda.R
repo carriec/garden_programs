@@ -94,7 +94,7 @@ sort(unique(All_States$State))
 ########Analysis########
 #What? Counts of types of programs and activities at state prisons
 
-###Number of Prisons with Confirmed (Yes=1/No=0) and Unconfirmed (NA) Programs
+###Number of Prisons with Confirmed (Yes=1/No=0) and Unconfirmed (NA) Programs by Category
 view(All_States %>%
   select(State, `Confirmed Program`) %>%
   group_by(State, `Confirmed Program`) %>%
