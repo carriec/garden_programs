@@ -21,3 +21,6 @@ install.packages("tmaptools")
 install.packages("RCurl")
 
 install.packages("xaringan")
+
+#Package for quickly converting numbers to integers
+install.packages("hablar")
