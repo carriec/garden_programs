@@ -25,7 +25,7 @@ library(ggthemes)
 ########Importing Data########
 #read in imported food/ag program data - states
 Becca_States <- read_excel("./data/raw_data/Correctional_Facility_Ag_Hort_Garden_Becca_States_SUMMER.xlsx")
-Becca_States <- Becca_States[1:112,c(1:3,17, 21:26)]
+Becca_States <- Becca_States[1:112,c(1:3, 20:26)]
 Becca_States <- Becca_States %>%
   filter(State != "Hawaii (ORG)")
 Addy_States <- read_excel("data/raw_data/Correctional_Facility_Contact_Tracking_Addy_States_SUMMER.xlsx")
@@ -57,8 +57,7 @@ Carrie_States <- Carrie_States %>%
          Crops = "Crops_and_silviculture", "Animal Agriculture" = Animal_agriculture,
          "Food Production" = Food_production, "Culinary Arts and Food Service" = Culinary_arts_and_food_service)
 Azmal_States <- Azmal_States %>%
-  rename(Crops = "Crops and Silviculture", "Confirmed Program" = "Confirmed Programs",
-         "Horticulture" = "Horitculture")
+  rename(Crops = "Crops and Silviculture", "Confirmed Program" = "Confirmed Programs")
 Evan_States <- Evan_States %>%
   rename(Crops = "Crops and silviculture", "Animal Agriculture" = "Animal agriculture",
          "Food Production" = "Food production", "Culinary Arts and Food Service" = "Culinary arts and food service",
@@ -106,38 +105,58 @@ All_States <-
 ########Analysis########
 #What? Counts of types of programs and activities at state prisons
 
-###Total number of prisons by state and category with Confirmed (Yes=1/No=0) and Unconfirmed (NA) programs
+###Total number of prisons by state with Confirmed (Yes=1/No=0) and Unconfirmed (NA) programs
 view(All_States %>%
-  select(State, `Confirmed Program`) %>%
   group_by(State, `Confirmed Program`) %>%
   summarise(prisons_tot = n()))
 
+###Write to CSV file
+write_csv(All_States %>%
+            group_by(State, `Confirmed Program`) %>%
+            summarise(prisons_tot = n()),
+          "./writing/eda_output/prisons_tot_state.csv",
+          append=FALSE)
+
 ###List of Prisons with Confirmed Yes (Yes=1) Programs, excluding Culinary Arts and Food Service
-view(All_States%>%
+All_States_Confirmed_Ag <-
+  All_States %>%
+  select(-`Culinary Arts and Food Service`) %>%
   filter(`Confirmed Program`==1 & 
            (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))
-  ))
+  )
 
-###Sum of Above List of Prisons with Confirmed Yes (Yes=1) Programs, excluding Culinary Arts and Food Service
+###View Sum for US of Above List of Prisons with Confirmed Yes (Yes=1) Programs, excluding Culinary Arts and Food Service
 view(All_States%>%
+    select(-`Culinary Arts and Food Service`) %>%
     filter(`Confirmed Program`==1 & 
              (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
     summarise(total_prisons=n()))
     
+###Sum for States of Above List of Prisons with Confirmed Yes (Yes=1) Programs, excluding Culinary Arts and Food Service
+All_States_Confirmed_Ag_count <- All_States%>%
+       select(-`Culinary Arts and Food Service`) %>%
+       filter(`Confirmed Program`==1 & 
+                (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
+       group_by(State, state) %>%
+       summarise(total_prisons=n())
 
-###Same list as above with unnecessary columns removed
-#view(All_States%>%
-#       select(-`Culinary Arts and Food Service`, -`state`, -`state_code`) %>%
-#       filter (`Confirmed Program`==1 &   
-#     (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))
-#       ))
+###Write CSV
+write_csv(
+    All_States%>%
+    select(-`Culinary Arts and Food Service`) %>%
+    filter(`Confirmed Program`==1 & 
+             (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
+    group_by(State, state) %>%
+    summarise(total_prisons=n()),
+    "./writing/eda_output/prisons_tot_state_confirmed_ag.csv",
+)
          
 ###List of Prisons + Program categories and subcategories with Confirmed Programs (Yes=1)
 All_States_pivot <-
   All_States %>%
   select(-`Culinary Arts and Food Service`) %>%
   filter(`Confirmed Program`==1) %>%
-  pivot_longer(cols = `Horticulture`:`Other`, names_to = "Program Category", values_to = "Subcategory") %>%
+  pivot_longer(cols = c(`Horticulture`,`Crops`,`Animal Agriculture`,`Food Production`,`Other`) , names_to = "Program Category", values_to = "Subcategory") %>%
   drop_na(Subcategory)
 
 ###Number of prisons by state with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
@@ -146,11 +165,38 @@ All_States_count <-
   group_by(State, state, region, `Confirmed Program`,`Program Category`) %>%
   summarise(prisons_tot = n())
 
-#Number of Prisons by state with Confirmed Activities (summed across all categories)
-All_States_count_allcat <-
-  All_States_count %>%
-  group_by(State, state, region) %>%
-  summarise(prisons_tot=sum(prisons_tot))
+#Write to CSV
+write_csv(All_States_pivot %>%
+            group_by(State, state, region, `Confirmed Program`,`Program Category`) %>%
+            summarise(prisons_tot = n()),
+          "./writing/eda_output/prisons_tot_confirmed_ag_state_category.csv",
+          append=FALSE)
+
+###Number of prisons by region with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
+All_Regions_count <-
+  All_States_pivot %>%
+  group_by(region, `Confirmed Program`,`Program Category`) %>%
+  summarise(prisons_tot = n())
+
+#Write to CSV
+write_csv(All_States_pivot %>%
+            group_by(region, `Confirmed Program`,`Program Category`) %>%
+            summarise(prisons_tot = n()),
+          "./writing/eda_output/prisons_tot_confirmed_ag_region_category.csv",
+          append=FALSE)
+
+###Number of prisons in US with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
+All_US_count <-
+  All_States_pivot %>%
+  group_by(`Confirmed Program`,`Program Category`) %>%
+  summarise(prisons_tot = n())
+
+#Write to CSV
+write_csv(All_States_pivot %>%
+          group_by(`Confirmed Program`,`Program Category`) %>%
+          summarise(prisons_tot = n()),
+          "./writing/eda_output/prisons_tot_confirmed_ag_us_category.csv",
+          append=FALSE)
 
 ###Bar plot: number of prisons with activities in a category, excluding Culinary Arts and Food Service
 #c <- ggplot(data=All_States_count, aes(x=state, y=prisons_tot))+
@@ -174,29 +220,58 @@ All_States_subcat <-
 ###Pivot subcategory columns into rows
 All_States_subcat_pivot <-
   All_States_subcat %>%
-  pivot_longer(cols=Sub_1:Sub_6, names_to = "Temp", values_to = "Subcategory") %>%
+  select(-`Stated Purpose of Activity`) %>%
+  pivot_longer(cols=c(paste("Sub",1:max_col, sep = "_")), names_to = "Temp", values_to = "Subcategory") %>%
   select(-Temp) %>%
   drop_na("Subcategory")
 
 ###Number of prisons by state with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
 All_States_subcat_count <-
   All_States_subcat_pivot %>%
+  mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
   group_by(state, region, `Confirmed Program`,`Program Category`, Subcategory) %>%
   summarise(prisons_tot = n())
+
+###Write to CSV
+write_csv( All_States_subcat_pivot %>%
+             mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
+             group_by(state, region, `Confirmed Program`,`Program Category`, Subcategory) %>%
+             summarise(prisons_tot = n()),
+           "./writing/eda_output/prisons_tot_confirmed_ag_state_subcategory.csv",
+           append=FALSE)
 
 ###Number of prisons by region with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
 All_Regions_subcat_count <-
   All_States_subcat_pivot %>%
+  mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
   group_by(region, `Confirmed Program`,`Program Category`, Subcategory) %>%
   summarise(prisons_tot = n())
 
+###Write to CSV
+write_csv( All_States_subcat_pivot %>%
+             mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
+             group_by(region, `Confirmed Program`,`Program Category`, Subcategory) %>%
+             summarise(prisons_tot = n()),
+           "./writing/eda_output/prisons_tot_confirmed_ag_region_subcategory.csv",
+           append=FALSE)
+
 ###Final calculation: The most common types of confirmed activities nationwide by subcategory and category.
-All_subcat_count <-
+All_US_subcat_count <-
   All_States_subcat_pivot %>%
   mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
   group_by(`Program Category`, Subcategory) %>%
   summarise(prisons_tot = n()) %>%
   arrange(desc(prisons_tot))
+
+###Write CSV
+write_csv(
+    All_States_subcat_pivot %>%
+    mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
+    group_by(`Program Category`, Subcategory) %>%
+    summarise(prisons_tot = n()) %>%
+    arrange(desc(prisons_tot)),
+    "./writing/eda_output/prisons_tot_confirmed_ag_us_subcategory.csv",
+    append=FALSE)
 
 ###Uninformative plot of all subcategories and states
 #c_subcat <- ggplot(data=All_States_subcat_count, aes(x=state, y=prisons_tot))+
@@ -209,9 +284,8 @@ All_subcat_count <-
 #Question 2: Where are things taking place around the country?
 #Solution: 50 state map of total activities across all categories: Number of prisons with confirmed activities.
 
-###Map of 50 states
+###Map of 50 states using albersusa package
 
-library(albersusa)
 plot(usa_composite(proj="laea"))
 
 us <- usa_composite()
@@ -228,17 +302,19 @@ gg <- gg + theme_map()
 #plot(us_sf["pop_2014"])
 #ggsf <- ggplot()
 #ggsf <- ggsf + geom_sf(data=us_sf,
-                       size=0.1)
+#                       size=0.1)
 #ggsf <- ggsf + theme_map()
 
-###Prisons with Activities by State  
-gg_allcat <- gg +
-  geom_map(data=All_States_count_allcat, map=us_map,
-           aes(fill=prisons_tot, map_id=State),
+###Prisons with Activities by State 
+gg_all <- gg +
+  geom_map(data=All_States_Confirmed_Ag_count, map=us_map,
+           aes(fill=total_prisons, map_id=State),
            color="white", size=0.1) +
   coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Prisons with Confirmed Activities") +
+  scale_fill_viridis(name="Prisons with Confirmed Ag Activities") +
   theme(legend.position="right")
+
+ggsave("map_prisons_conf_ag.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Question 2a: Are there certain parts of the country with certain activities more so than others? 
 #Solution: 50 state map of each category: Number of prisons with confirmed activities.
@@ -257,6 +333,8 @@ gg_hort <- gg +
   scale_fill_viridis(name="Prisons with Horticulture") +
   theme(legend.position="right")
 
+ggsave("map_prisons_conf_hort.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+
 ###Prisons with Crops and Silviculture by State
 All_States_count_crops <-
   All_States_count %>%
@@ -270,6 +348,8 @@ gg_crops <- gg +
   coord_proj(us_laea_proj) +
   scale_fill_viridis(name="Prisons with Crops and Silviculture") +
   theme(legend.position="right")
+
+ggsave("map_prisons_conf_crops.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 ###Prisons with Animal Ag by State
 All_States_count_animals <-
@@ -285,6 +365,8 @@ gg_animals <- gg +
   scale_fill_viridis(name="Prisons with Animal Agriculture") +
   theme(legend.position="right")
 
+ggsave("map_prisons_conf_animals.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+
 ###Prisons with Food Production & Processing by State
 All_States_count_food <-
   All_States_count %>%
@@ -299,25 +381,33 @@ gg_food <- gg +
   scale_fill_viridis(name="Prisons with Food Production & Processing") +
   theme(legend.position="right")
 
+ggsave("map_prisons_conf_food.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+
 #Question 2b. What are the regions?
 
 ###Look at regions
 view(data.frame(region = state.region, state= state.abb))
 
 ###Plot program categories broken down by region
-region1 <- ggplot(data=All_States_count, aes(x=region, y=prisons_tot))+
-  geom_col(aes(fill=`Program Category`))
+region1 <- ggplot(data=All_Regions_count, aes(x=region, y=prisons_tot)) +
+  geom_col(aes(fill=`Program Category`)) + 
+  labs(y = "Number of Prisons", x = "Region", title = "Prisons with Ag Programs")
+
+ggsave("plot_ag_region1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 ###Plot regions broken down by program categories
-region2 <- ggplot(data=All_States_count, aes(x=`Program Category`, y=prisons_tot))+
-  geom_col(aes(fill=`region`))
+region2 <- ggplot(data=All_Regions_count, aes(x=`Program Category`, y=prisons_tot)) +
+  geom_col(aes(fill=`region`)) +
+  labs(y= "Number of Prisons", x = "Program Category", fill = "Region", title = "Prisons with Ag Programs")
+
+ggsave("plot_ag_region2.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Question 3. Why? What are the purposes of the programs?
 
-###Subset of all states data with purpose not null
+###Subset of all states  confirmed ag data with purpose not null
 All_States_purpose <-
-  All_States %>%
-  filter(!is.na(`Stated Purpose of Activity`) & `Confirmed Program`==1)
+  All_States_Confirmed_Ag %>%
+  filter(!is.na(`Stated Purpose of Activity`))
 
 ###Calculate the max number of purposes at a prison
 max_col_purpose <- max(str_count(All_States_purpose$`Stated Purpose of Activity`, ";")+1)
@@ -335,17 +425,30 @@ All_States_purpose_separate <-
 ###Pivot data so that each purpose at a facility has one row
 All_States_purpose_pivot <-
   All_States_purpose_separate %>%
-  pivot_longer(cols=Purpose_1:Purpose_7, names_to = "Temp", values_to = "Purpose") %>%
+  pivot_longer(cols=c(paste("Purpose",1:max_col_purpose, sep = "_")), names_to = "Temp", values_to = "Purpose") %>%
   select(-Temp) %>%
   drop_na("Purpose")
 
+###Remove any blank entries
+All_States_purpose_pivot <-
+   All_States_purpose_pivot %>%
+  mutate(Purpose = str_trim(tolower(Purpose), side = "both")) %>%
+    filter(Purpose != "")
+
 ###Plot purposes broken down by region
 region3 <- ggplot(data=All_States_purpose_pivot, aes(Purpose, ..count..)) +
-  geom_bar(aes(fill=region))
+  geom_bar(aes(fill=region)) +
+  labs(y = "Number of Prisons", x = "Purpose", fill = "Region", title = "Purpose of Ag Programs") +
+  coord_flip()
+
+ggsave("plot_ag_region3.png", plot = last_plot(), device = "png", path = "./writing/eda_output/")
 
 ###Plot regions broken down by purposes
 region4 <- ggplot(data=All_States_purpose_pivot, aes(region, ..count..)) +
-  geom_bar(aes(fill=Purpose))
+  geom_bar(aes(fill=Purpose)) +
+  labs(y = "Number of Prisons", x = "Region", title = "Purpose of Ag Programs")
+
+ggsave("plot_ag_region4.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 ###This won't work for a map because there are too many ties.
 view(
@@ -354,6 +457,8 @@ view(
   summarise(prisons_tot = n()) %>%
   mutate(rank = rank(prisons_tot, ties="average"))
 )
+
+
 
 
 

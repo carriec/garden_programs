@@ -1,0 +1,21 @@
+region,Confirmed Program,Program Category,prisons_tot
+Northeast,1,Animal Agriculture,8
+Northeast,1,Crops,3
+Northeast,1,Food Production,1
+Northeast,1,Horticulture,64
+Northeast,1,Other,2
+South,1,Animal Agriculture,120
+South,1,Crops,137
+South,1,Food Production,27
+South,1,Horticulture,246
+South,1,Other,24
+North Central,1,Animal Agriculture,20
+North Central,1,Crops,5
+North Central,1,Food Production,11
+North Central,1,Horticulture,113
+North Central,1,Other,17
+West,1,Animal Agriculture,21
+West,1,Crops,9
+West,1,Food Production,1
+West,1,Horticulture,66
+West,1,Other,23
