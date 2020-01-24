@@ -17,10 +17,18 @@ install.packages("tidycensus")
 install.packages("maps")
 install.packages("geojsonR")
 install.packages("tmaptools")
+
 install.packages("maptools")
 install.packages("mapproj")
 install.packages("rgeos")
 install.packages("rgdal")
+install.packages("RColorBrewer")
+install.packages("ggplot2")
+
+devtools::install_github("hrbrmstr/albersusa")
+install.packages("ggalt")
+install.packages("viridis")
+install.packages("ggthemes")
 
 install.packages("RCurl")
 

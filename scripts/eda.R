@@ -13,6 +13,11 @@ library(RCurl)
 library(tmaptools)
 library(ggmap)
 library(hablar)
+library(albersusa)
+library(ggalt)
+library(viridis)
+library(ggthemes)
+
 
 #set Census API key, obtained at: http://api.census.gov/data/key_signup.html
 ###census_api_key("INSERT_KEY_HERE", install = TRUE)
@@ -91,10 +96,17 @@ Carrie_States <-
 All_States <- rbind(Becca_States, Carrie_States, Azmal_States, All_Other_States)
 sort(unique(All_States$State))
 
+#add regions to data
+region_state <- data.frame(region = state.region, state= state.abb)
+
+All_States <- 
+  All_States %>%
+  left_join(region_state)
+
 ########Analysis########
 #What? Counts of types of programs and activities at state prisons
 
-###Number of Prisons with Confirmed (Yes=1/No=0) and Unconfirmed (NA) Programs by Category
+###Total number of prisons by state and category with Confirmed (Yes=1/No=0) and Unconfirmed (NA) programs
 view(All_States %>%
   select(State, `Confirmed Program`) %>%
   group_by(State, `Confirmed Program`) %>%
@@ -106,54 +118,248 @@ view(All_States%>%
            (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))
   ))
 
-###Same list as above with unnecessary columns removed
+###Sum of Above List of Prisons with Confirmed Yes (Yes=1) Programs, excluding Culinary Arts and Food Service
 view(All_States%>%
-       select(-`Culinary Arts and Food Service`, -`state`, -`state_code`) %>%
-       filter (`Confirmed Program`==1 &   
-     (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))
-       ))
+    filter(`Confirmed Program`==1 & 
+             (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
+    summarise(total_prisons=n()))
+    
+
+###Same list as above with unnecessary columns removed
+#view(All_States%>%
+#       select(-`Culinary Arts and Food Service`, -`state`, -`state_code`) %>%
+#       filter (`Confirmed Program`==1 &   
+#     (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))
+#       ))
          
-###Program categories offered at each prison with list of subcategories
+###List of Prisons + Program categories and subcategories with Confirmed Programs (Yes=1)
 All_States_pivot <-
   All_States %>%
+  select(-`Culinary Arts and Food Service`) %>%
+  filter(`Confirmed Program`==1) %>%
   pivot_longer(cols = `Horticulture`:`Other`, names_to = "Program Category", values_to = "Subcategory") %>%
-  drop_na(Subcategory) %>%
-  distinct()
+  drop_na(Subcategory)
 
-###Number of prisons with activities in a category
+###Number of prisons by state with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
 All_States_count <-
   All_States_pivot %>%
-  select(State, `Confirmed Program`, `Program Category`, Subcategory) %>%
-  group_by(State, `Confirmed Program`,`Program Category`) %>%
+  group_by(State, state, region, `Confirmed Program`,`Program Category`) %>%
   summarise(prisons_tot = n())
 
-#######START HERE - LEFT OFF
+#Number of Prisons by state with Confirmed Activities (summed across all categories)
+All_States_count_allcat <-
+  All_States_count %>%
+  group_by(State, state, region) %>%
+  summarise(prisons_tot=sum(prisons_tot))
 
-####number of prisons with food & ag programs by state
-q <- ggplot(data = All_States_pivot, aes(state, ..count..)) +
- facet_wrap(~ "Program Category")
+###Bar plot: number of prisons with activities in a category, excluding Culinary Arts and Food Service
+#c <- ggplot(data=All_States_count, aes(x=state, y=prisons_tot))+
+#  geom_col(aes(fill=`Program Category`))
 
-q + labs(y = "Number of Prisons", x = "State", title = "Prisons with Food & Ag Programs")
-####number of prisons with food & ag programs by subcategory and state
-r <- ggplot(data = All_States_pivot, aes(state, ..count..)) +
-  geom_bar(aes(fill = Type_temp)) +
-  facet_wrap(~ Program)
-r + labs(y = "Number of Prison Programs", x = "State", title = "Food & Ag Programs at Prisons",  subtitle = "By Category and Subcategory") +
-  guides(fill = guide_legend(title="Subcategories"))
+#Question 1: What are the most common types of activities? 
+#Solution: Number of prisons with confirmed activities in a subcategory, excluding Culinary Arts and Food Service
 
+###Calculate the max number of subcategories within a category at a prison
+max_col <- max(str_count(All_States_pivot$Subcategory, ";")+1)
 
+###Remove spaces after semi-colons
+All_States_pivot$Subcategory <-
+  gsub(";\\s+",";", All_States_pivot$Subcategory)
 
-###Count of prisons offering programs in each category
-All_States_program_count <-
+###Split confirmed (Yes=1) subcategories into multiple columns, use semi-colon to parse
+All_States_subcat <-
   All_States_pivot %>%
-  distinct("state", "Program Category") %>%
-  summarise(count = n())
+  separate(col=Subcategory, into=c(paste("Sub",1:max_col, sep = "_")), sep=";")
+
+###Pivot subcategory columns into rows
+All_States_subcat_pivot <-
+  All_States_subcat %>%
+  pivot_longer(cols=Sub_1:Sub_6, names_to = "Temp", values_to = "Subcategory") %>%
+  select(-Temp) %>%
+  drop_na("Subcategory")
+
+###Number of prisons by state with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
+All_States_subcat_count <-
+  All_States_subcat_pivot %>%
+  group_by(state, region, `Confirmed Program`,`Program Category`, Subcategory) %>%
+  summarise(prisons_tot = n())
+
+###Number of prisons by region with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
+All_Regions_subcat_count <-
+  All_States_subcat_pivot %>%
+  group_by(region, `Confirmed Program`,`Program Category`, Subcategory) %>%
+  summarise(prisons_tot = n())
+
+###Final calculation: The most common types of confirmed activities nationwide by subcategory and category.
+All_subcat_count <-
+  All_States_subcat_pivot %>%
+  mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
+  group_by(`Program Category`, Subcategory) %>%
+  summarise(prisons_tot = n()) %>%
+  arrange(desc(prisons_tot))
+
+###Uninformative plot of all subcategories and states
+#c_subcat <- ggplot(data=All_States_subcat_count, aes(x=state, y=prisons_tot))+
+#  geom_col(aes(fill=`Subcategory`))
+
+###Uninformative plot of all states and subcategories
+#c2_subcat <- ggplot(data=All_States_subcat_count, aes(x=`Subcategory`, y=prisons_tot))+
+#  geom_col(aes(fill=`state`))
+
+#Question 2: Where are things taking place around the country?
+#Solution: 50 state map of total activities across all categories: Number of prisons with confirmed activities.
+
+###Map of 50 states
+
+library(albersusa)
+plot(usa_composite(proj="laea"))
+
+us <- usa_composite()
+us_map <- fortify(us, region="name")
+
+gg <- ggplot()
+gg <- gg + geom_map(data=us_map, map=us_map,
+                    aes(x=long, y=lat, map_id=id),
+                    color="#2b2b2b", size=0.1, fill=NA)
+gg <- gg + theme_map()
+
+##playing around
+#us_sf <- usa_sf("laea")
+#plot(us_sf["pop_2014"])
+#ggsf <- ggplot()
+#ggsf <- ggsf + geom_sf(data=us_sf,
+                       size=0.1)
+#ggsf <- ggsf + theme_map()
+
+###Prisons with Activities by State  
+gg_allcat <- gg +
+  geom_map(data=All_States_count_allcat, map=us_map,
+           aes(fill=prisons_tot, map_id=State),
+           color="white", size=0.1) +
+  coord_proj(us_laea_proj) +
+  scale_fill_viridis(name="Prisons with Confirmed Activities") +
+  theme(legend.position="right")
+
+#Question 2a: Are there certain parts of the country with certain activities more so than others? 
+#Solution: 50 state map of each category: Number of prisons with confirmed activities.
+
+###Prisons with Horticulture Activities by State
+All_States_count_hort <-
+  All_States_count %>%
+  filter(`Program Category`== "Horticulture")
+
+###Map of prisons with Horticulture Activities
+gg_hort <- gg + 
+  geom_map(data=All_States_count_hort, map=us_map,
+           aes(fill=prisons_tot, map_id=State),
+           color="white", size=0.1) +
+  coord_proj(us_laea_proj) +
+  scale_fill_viridis(name="Prisons with Horticulture") +
+  theme(legend.position="right")
+
+###Prisons with Crops and Silviculture by State
+All_States_count_crops <-
+  All_States_count %>%
+  filter(`Program Category`== "Crops")
+
+###Map of Prisons with Crops and Silviculture
+gg_crops <- gg + 
+  geom_map(data=All_States_count_crops, map=us_map,
+           aes(fill=prisons_tot, map_id=State),
+           color="white", size=0.1) +
+  coord_proj(us_laea_proj) +
+  scale_fill_viridis(name="Prisons with Crops and Silviculture") +
+  theme(legend.position="right")
+
+###Prisons with Animal Ag by State
+All_States_count_animals <-
+  All_States_count %>%
+  filter(`Program Category`== "Animal Agriculture")
+
+###Map of Prisons with Animal Ag
+gg_animals <- gg + 
+  geom_map(data=All_States_count_animals, map=us_map,
+           aes(fill=prisons_tot, map_id=State),
+           color="white", size=0.1) +
+  coord_proj(us_laea_proj) +
+  scale_fill_viridis(name="Prisons with Animal Agriculture") +
+  theme(legend.position="right")
+
+###Prisons with Food Production & Processing by State
+All_States_count_food <-
+  All_States_count %>%
+  filter(`Program Category`== "Food Production")
+
+###Map of Prisons with Food Production & Processing by State
+gg_food <- gg + 
+  geom_map(data=All_States_count_food, map=us_map,
+           aes(fill=prisons_tot, map_id=State),
+           color="white", size=0.1) +
+  coord_proj(us_laea_proj) +
+  scale_fill_viridis(name="Prisons with Food Production & Processing") +
+  theme(legend.position="right")
+
+#Question 2b. What are the regions?
+
+###Look at regions
+view(data.frame(region = state.region, state= state.abb))
+
+###Plot program categories broken down by region
+region1 <- ggplot(data=All_States_count, aes(x=region, y=prisons_tot))+
+  geom_col(aes(fill=`Program Category`))
+
+###Plot regions broken down by program categories
+region2 <- ggplot(data=All_States_count, aes(x=`Program Category`, y=prisons_tot))+
+  geom_col(aes(fill=`region`))
+
+#Question 3. Why? What are the purposes of the programs?
+
+###Subset of all states data with purpose not null
+All_States_purpose <-
+  All_States %>%
+  filter(!is.na(`Stated Purpose of Activity`) & `Confirmed Program`==1)
+
+###Calculate the max number of purposes at a prison
+max_col_purpose <- max(str_count(All_States_purpose$`Stated Purpose of Activity`, ";")+1)
+
+###Remove spaces after semi-colons
+All_States_purpose$`Stated Purpose of Activity` <-
+  gsub(";\\s+",";", All_States_purpose$`Stated Purpose of Activity`)
+
+###Separate data so that each purpose at a facility has one column
+All_States_purpose_separate <-
+  All_States_purpose %>%
+  separate(col=`Stated Purpose of Activity`, 
+           into=c(paste("Purpose",1:max_col_purpose, sep = "_")), sep=";")
+
+###Pivot data so that each purpose at a facility has one row
+All_States_purpose_pivot <-
+  All_States_purpose_separate %>%
+  pivot_longer(cols=Purpose_1:Purpose_7, names_to = "Temp", values_to = "Purpose") %>%
+  select(-Temp) %>%
+  drop_na("Purpose")
+
+###Plot purposes broken down by region
+region3 <- ggplot(data=All_States_purpose_pivot, aes(Purpose, ..count..)) +
+  geom_bar(aes(fill=region))
+
+###Plot regions broken down by purposes
+region4 <- ggplot(data=All_States_purpose_pivot, aes(region, ..count..)) +
+  geom_bar(aes(fill=Purpose))
+
+###This won't work for a map because there are too many ties.
+view(
+  All_States_purpose_pivot %>%
+  group_by(state, Purpose) %>%
+  summarise(prisons_tot = n()) %>%
+  mutate(rank = rank(prisons_tot, ties="average"))
+)
 
 
-All_States_pivot_2 <-
-  All_States_pivot %>%
-  mutate()
 
+
+
+#######LEFT OFF HERE
 Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp2 <-
   Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp %>%
   mutate(Type = tolower(Type_temp)) %>%
@@ -245,14 +451,39 @@ d + geom_map(aes(map_id = state), map = map) +
 
 
 #exploring census data
+
+v2015 <- load_variables(2015, dataset = "acs5", cache = TRUE)
+View(v2015)
 v <- load_variables(2010, dataset = "sf1", cache = TRUE)
 View(v)
-m <- get_decennial(geography = "state", variables = "P001001", geometry = TRUE) %>%
-  left_join()
+
+# total population by state 2010 census - shift location for Alaska/Hawaii (see https://map-rfun.library.duke.edu/02_choropleth.html#alaska__hawaii_-_shift)
+m <- get_decennial(geography = "state", variables = "P001001", geometry = TRUE, shift_geo = TRUE) 
+
 ggplot(m, aes(fill = value, color = value)) +
   geom_sf() +
-  coord_sf(crs = 26914)
+  coord_sf(crs = us_laea_proj)
 
+###slightly different map projection
+#ggplot(m, aes(fill = value, color = value)) +
+#  geom_sf() +
+#  coord_sf(crs = 26914)
+
+###Map of 2014 census data using albersusa package functions
+#us_sf <- usa_sf("laea")
+
+#ggplot(us_sf, aes(fill=pop_2014, color=pop_2014)) +
+#  geom_sf()
+   
+###Note: Think about joining these data sets to map census data using albersusa functions.
+
+v18 <- load_variables(2018, "acs5", cache = TRUE)    
+#Population by region 2018 5-year ACS
+region_pop <- get_acs(geography="region",
+                  variables = "B19013_001")
+
+ggplot(region_pop, aes(y=estimate, x=NAME)) +
+  geom_col(aes(fill=NAME))
 
 #read in ICPSR data
 load("./data/icpsr_data/ICPSR_36128/DS0001/36128-0001-Data.rda")
@@ -308,7 +539,7 @@ c
 #  Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_latlon %>%
 #  left_join(latlon.josh.state, by = c("Name and State" = "query"))
 
-####Maps of HIFLD Prison Boundaries data
+###Maps of HIFLD Prison Boundaries data
 file_js = FROM_GeoJson(url_file_string = "https://opendata.arcgis.com/datasets/2d6109d4127d458eaf0958e4c5296b67_0.geojson", Average_Coordinates = TRUE)
 class(file_js)
 file_js
@@ -354,3 +585,111 @@ us_map + geom_sf(data = hifld, inherit.aes = FALSE) +
 #Addy_County <- Addy_County[1:356,]
 #Josh_County <- read_excel("data/raw_data/Correctional_Facility_Contact_Tracking_Josh_States_SUMMER.xlsx", sheet = 2)
 
+###Mapping U.S. states and counties alternative: see https://socviz.co/maps.html
+
+#library(maptools)
+#library(mapproj)
+#library(rgeos)
+#library(rgdal)
+
+us_states <- map_data("state")
+head(us_states)
+
+p <- ggplot(data = us_states,
+            mapping = aes(x = long, y = lat,
+                          group = group))
+
+p + geom_polygon(fill = "white", color = "black")
+
+#Map the fill aesthetic to region and change the color mapping to a light gray and thin the lines to make the state borders a little nicer. Do not plot a legend.
+
+p <- ggplot(data = us_states,
+            aes(x = long, y = lat,
+                group = group, fill = region))
+
+p + geom_polygon(color = "gray90", size = 0.1) + guides(fill = FALSE)
+
+#Transform the default projection used by geom_polygon(), via the coord_map() function. The Albers projection requires two latitude parameters, lat0 and lat1. We give them their conventional values for a US map here.
+p <- ggplot(data = us_states,
+            mapping = aes(x = long, y = lat,
+                          group = group, fill = region))
+
+p + geom_polygon(color = "gray90", size = 0.1) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  guides(fill = FALSE)
+
+#Merge our horticulture data with that data frame to get our data on the  map. Use left_join to merge.
+#All_States_count$region <- tolower(All_States_count$State)
+#view(us_states %>%
+#       filter(region=="alaska"))
+
+All_States_count_hort <-
+  All_States_count %>%
+  filter(`Program Category`== "Horticulture")
+#All_States_count_hort <- left_join(us_states, All_States_count_hort)
+
+#Plot our horticulture data in a map.
+p <- ggplot(data = All_States_count_hort,
+            aes(x = long, y = lat,
+                group = group, fill = prisons_tot))
+
+p + geom_polygon(color = "gray90", size = 0.1) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) 
+
+#Make the map prettier.
+p0 <- ggplot(data = All_States_count_hort,
+             mapping = aes(x = long, y = lat,
+                           group = group, fill = prisons_tot))
+p1 <- p0 + geom_polygon(color = "gray90", size = 0.1) +
+  coord_equal()
+
+coord_map(projection = "albers", lat0 = 39, lat1 = 45) 
+p2 <- p1  + 
+  scale_fill_gradient(low="#E5F5F9",high="#2CA25F") +
+  labs(title = "State Prisons with Horticulture", fill = NULL)
+
+####number of prisons with food & ag programs by state
+q <- ggplot(data = All_States_pivot, aes(state, ..count..)) +
+  facet_wrap(~ "Program Category")
+
+q + labs(y = "Number of Prisons", x = "State", title = "Prisons with Food & Ag Programs")
+####number of prisons with food & ag programs by subcategory and state
+r <- ggplot(data = All_States_pivot, aes(state, ..count..)) +
+  geom_bar(aes(fill = Type_temp)) +
+  facet_wrap(~ Program)
+r + labs(y = "Number of Prison Programs", x = "State", title = "Food & Ag Programs at Prisons",  subtitle = "By Category and Subcategory") +
+  guides(fill = guide_legend(title="Subcategories"))
+
+#map U.S. counties
+us_counties <- readOGR(dsn="data/geojson/gz_2010_us_050_00_5m.json",
+                       layer="OGRGeoJSON")
+
+us_counties_aea <- spTransform(us_counties,
+                               CRS("+proj=laea +lat_0=45 +lon_0=-100 \
+                         +x_0=0 +y_0=0 +a=6370997 +b=6370997 \
+                         +units=m +no_defs"))
+
+us_counties_aea@data$id <- rownames(us_counties_aea@data)
+
+#relocate alaska and hawaii
+alaska <- us_counties_aea[us_counties_aea$STATE == "02",]
+alaska <- elide(alaska, rotate=-50)
+alaska <- elide(alaska, scale=max(apply(bbox(alaska), 1, diff)) / 2.3)
+alaska <- elide(alaska, shift=c(-2100000, -2500000))
+proj4string(alaska) <- proj4string(us_counties_aea)
+
+hawaii <- us_counties_aea[us_counties_aea$STATE=="15",]
+hawaii <- elide(hawaii, rotate=-35)
+hawaii <- elide(hawaii, shift=c(5400000, -1400000))
+proj4string(hawaii) <- proj4string(us_counties_aea)
+
+us_counties_aea <- us_counties_aea[!us_counties_aea$STATE %in% c("02", "15", "72"),]
+us_counties_aea <- rbind(us_counties_aea, alaska, hawaii)
+
+#tidy the spatial object into a data frame that ggplot can use, and clean up the id label by stripping out a prefix from the string.
+
+county_map <- tidy(us_counties_aea, region = "GEO_ID")
+county_map$id <- stringr::str_replace(county_map$id,
+                                      pattern = "0500000US", replacement = "")
+
+#county_map object is ready to be merged with a table of FIPS-coded US county data using either merge() or left_join().
