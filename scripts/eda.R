@@ -17,6 +17,7 @@ library(albersusa)
 library(ggalt)
 library(viridis)
 library(ggthemes)
+library(ggmosaic)
 
 
 #set Census API key, obtained at: http://api.census.gov/data/key_signup.html
@@ -405,6 +406,7 @@ ggsave("plot_ag_region2.png", plot = last_plot(), device="png", path = "./writin
 #Question 3. Why? What are the purposes of the programs?
 
 ###Subset of all states  confirmed ag data with purpose not null
+###Think about modifying code to bring back in Culinary Arts and Food Service - since purpose is for across all categories
 All_States_purpose <-
   All_States_Confirmed_Ag %>%
   filter(!is.na(`Stated Purpose of Activity`))
@@ -450,21 +452,42 @@ region4 <- ggplot(data=All_States_purpose_pivot, aes(region, ..count..)) +
 
 ggsave("plot_ag_region4.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-###This won't work for a map because there are too many ties.
-view(
+###States and count of prisons with stated purpose for ag programs
+All_States_purpose_count <-
   All_States_purpose_pivot %>%
-  group_by(state, Purpose) %>%
-  summarise(prisons_tot = n()) %>%
-  mutate(rank = rank(prisons_tot, ties="average"))
-)
+  group_by(State, state, Purpose) %>%
+  summarise(prisons_tot = n())
+
+All_States_purpose_pivot_unite <-
+  All_States_purpose_pivot %>%
+  unite("activities", Horticulture:Other, remove = FALSE, na.rm = TRUE, sep = " + " ) %>%
+  mutate(activities = tolower(activities))
+
+#####LEFT OFF HERE
+ggplot(subset(All_States_purpose_pivot_unite, !is.na(Horticulture)) + 
+         geom_mosaic(aes(x = product(activities, Purpose), fill=Purpose)))
+
+order1 <- ggplot(subset(All_States_purpose_pivot_unite, !is.na(Horticulture))) +
+  geom_mosaic(aes(x = product(activities, Purpose), fill=Purpose),
+              na.rm=TRUE) +
+  labs(x = "Purpose ", title='blah blah') +
+  theme(plot.title = element_text(size = rel(1)))
+
+ggplot(data = fly) +
+  geom_mosaic(aes(x = product(RudeToRecline), fill=DoYouRecline))
+  
+###Map of prisons with confirmed ag activities faceted by stated purpose
+###Note: May want to bring culinary arts and food service back in, as service is for all activity categories
+#gg_purpose <- gg +
+#  geom_map(data=All_States_purpose_count, map=us_map,
+#           aes(fill=prisons_tot, map_id=State),
+#           color="white", size=0.1) +
+#  facet_wrap( ~ Purpose) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Prisons with Confirmed Ag Activities: Stated Purpose") +
+#  theme(legend.position="right")
 
 
-
-
-
-
-
-#######LEFT OFF HERE
 Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp2 <-
   Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp %>%
   mutate(Type = tolower(Type_temp)) %>%

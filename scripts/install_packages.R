@@ -36,3 +36,6 @@ install.packages("xaringan")
 
 #Package for quickly converting numbers to integers
 install.packages("hablar")
+
+#Package for mosaic plot with ggplot2
+install.packages("ggmosaic")
