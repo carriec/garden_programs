@@ -39,3 +39,6 @@ install.packages("hablar")
 
 #Package for mosaic plot with ggplot2
 install.packages("ggmosaic")
+
+#Package for record linkage
+install.packages("RecordLinkage")

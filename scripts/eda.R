@@ -18,6 +18,7 @@ library(ggalt)
 library(viridis)
 library(ggthemes)
 library(ggmosaic)
+library(RecordLinkage)
 
 
 #set Census API key, obtained at: http://api.census.gov/data/key_signup.html
@@ -463,19 +464,6 @@ All_States_purpose_pivot_unite <-
   unite("activities", Horticulture:Other, remove = FALSE, na.rm = TRUE, sep = " + " ) %>%
   mutate(activities = tolower(activities))
 
-#####LEFT OFF HERE
-ggplot(subset(All_States_purpose_pivot_unite, !is.na(Horticulture)) + 
-         geom_mosaic(aes(x = product(activities, Purpose), fill=Purpose)))
-
-order1 <- ggplot(subset(All_States_purpose_pivot_unite, !is.na(Horticulture))) +
-  geom_mosaic(aes(x = product(activities, Purpose), fill=Purpose),
-              na.rm=TRUE) +
-  labs(x = "Purpose ", title='blah blah') +
-  theme(plot.title = element_text(size = rel(1)))
-
-ggplot(data = fly) +
-  geom_mosaic(aes(x = product(RudeToRecline), fill=DoYouRecline))
-  
 ###Map of prisons with confirmed ag activities faceted by stated purpose
 ###Note: May want to bring culinary arts and food service back in, as service is for all activity categories
 #gg_purpose <- gg +
@@ -487,6 +475,90 @@ ggplot(data = fly) +
 #  scale_fill_viridis(name="Prisons with Confirmed Ag Activities: Stated Purpose") +
 #  theme(legend.position="right")
 
+###HIFLD Prison Boundaries data
+#file_js = FROM_GeoJson(url_file_string = "https://opendata.arcgis.com/datasets/2d6109d4127d458eaf0958e4c5296b67_0.geojson", Average_Coordinates = TRUE)
+#class(file_js)
+#file_js
+hifld<-getURL("https://opendata.arcgis.com/datasets/2d6109d4127d458eaf0958e4c5296b67_0.geojson")
+hifld <- st_read(hifld)
+
+###Convert HIFLD spatial data to data frame
+hifld.no_sf <- as.data.frame(hifld) 
+class(hifld.no_sf) 
+rm(hifld)
+
+###Select open adult (not juvenile) state facilities
+hifld.filter <- hifld.no_sf %>%
+  filter(STATUS %in% c("OPEN","NOT AVAILABLE") & TYPE %in% c("STATE","MULTI","NOT AVAILABLE") & SECURELVL %in% c("CLOSE","MAXIMUM","MEDIUM","MINIMUM","NOT AVAILABLE"))
+
+hifld.filter <- hifld.filter %>%
+  filter(! STATE %in% c("DC","PR"))
+
+###Perform record linkage between HIFLD data and our collected data
+###(see: https://rpubs.com/ahmademad/RecordLinkage)
+###Preprocessing: Select common fields and, in our data, convert name to upper case and trim
+hifld_rl <- hifld.filter %>%
+  select(NAME, STATE) %>% ##note that this is an sf data set and has geometry associated with entries
+  rownames_to_column(var = "id")
+  
+All_States_rl <- All_States %>%
+  select("Name of Correctional Facility", "state") %>%
+  mutate(`Name of Correctional Facility` = str_trim(toupper(`Name of Correctional Facility`))) %>%
+  rename(NAME = `Name of Correctional Facility`) %>%
+  rename(STATE = state) %>%
+  rownames_to_column(var = "id")
+
+#Create pairs from linking two data sets with cutoff between 0 and 1
+a <- compare.linkage(hifld_rl, All_States_rl, blockfld = c("STATE"), strcmp=T, exclude="id")
+print(head(a$pairs))
+b <- emWeights(a, cutoff = 0.95)
+summary(b)
+head(b)
+allPairs <- getPairs(b)
+head(allPairs)
+write_csv(allPairs, path = "./writing/eda_output/allPairs.csv",
+          append=FALSE)
+
+#Look at weights of pairs
+weights <- as.data.frame(b$Wdata)
+weights <- weights %>%
+  rename(Wdata = `b$Wdata`)
+ggplot(weights, mapping=aes(Wdata)) +
+  geom_histogram(binwidth = .01)
+summary(weights$Wdata)
+table(weights$Wdata)
+
+#DID NOT USE: Based on weights, set threshold to 0 and upper threshold to 11.2331063182439
+#finalPairs <- getPairs(b, min.weight = 0, max.weight = 11.2331063182439)
+#head(finalPairs)
+#write_csv(finalPairs, path = "./writing/eda_output/finalPairs.csv",
+#          append=FALSE)
+
+#Set thresholds for predictions of Link (L), Possible (P), and Not a link (N)
+c <- emClassify(b, threshold.lower = 11.2219657606387, threshold.upper = 11.2331063182439)
+summary(c)
+finalResults <- c$pairs
+finalResults$weight <- c$Wdata
+finalResults$links <- c$prediction
+finalResults$id1 <- as.character(finalResults$id1)
+finalResults$id2 <- as.character(finalResults$id2)
+
+#Convert All_States_rl for join with final Results
+#Rename HIFLD_rl id column to id2 to join with final Results
+All_States_rl <- as.data.frame(All_States_rl)
+All_States_rlid2 <- All_States_rl %>%
+  rename(id2 = id)
+
+#Rename HIFLD_rl id column to id1 for join with final Results
+hifld_rlid1 <- hifld_rl %>%
+  rename(id1 = id)
+
+finalResults_join <- finalResults %>%
+  left_join(All_States_rlid2, by = c("id2")) %>%
+  left_join(hifld_rlid1, by = c("id1"))
+
+
+####LEFT OFF HERE
 
 Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp2 <-
   Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp %>%
@@ -667,7 +739,7 @@ c
 #  Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_latlon %>%
 #  left_join(latlon.josh.state, by = c("Name and State" = "query"))
 
-###Maps of HIFLD Prison Boundaries data
+###HIFLD Prison Boundaries data
 file_js = FROM_GeoJson(url_file_string = "https://opendata.arcgis.com/datasets/2d6109d4127d458eaf0958e4c5296b67_0.geojson", Average_Coordinates = TRUE)
 class(file_js)
 file_js
@@ -681,6 +753,8 @@ hifld <- st_read(hifld)
 #st_geometry(hifld)[[1]][[1]]
 #st_bbox(hifld[1])
 
+
+  
 ####Min and max lat and lon coordinates from HIFLD data set
 
 #hifld2 <- hifld %>%
@@ -697,7 +771,25 @@ hifld <- st_read(hifld)
 #    row_bbox <- st_bbox(hifld[i,])
 #    print(row_bbox$ymax) })
 
-####Map of sites in HIFLD data set - need to check the projection types so that coordinates map correctly
+
+hifld_rl <- hifld %>%
+  select()
+
+rpairs=compare.linkage(RLdata500,RLdata10000,blockfld=c(1,7)
+
+
+
+###In progress - creating map of HIFLD data
+gg_hifld <- gg +
+  geom_map(data=hifld, map=us_map,
+           aes(fill=POPULATION, map_id=State),
+           color="white", size=0.1) +
+  coord_proj(us_laea_proj) +
+  scale_fill_viridis(name="Prison Populations") +
+  theme(legend.position="right")
+
+
+####Previous work - Map of sites in HIFLD data set - need to check the projection types so that coordinates map correctly
 ggplot(data=hifld) +
   geom_sf()
 
