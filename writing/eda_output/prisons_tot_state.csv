@@ -12,29 +12,29 @@ Colorado,1,19
 Connecticut,0,2
 Connecticut,1,3
 Delaware,1,3
-Florida,0,7
-Florida,1,32
-Florida,NA,25
+Florida,0,10
+Florida,1,36
+Florida,NA,46
 Georgia,1,76
 Hawaii,0,1
 Hawaii,1,3
 Idaho,0,2
 Idaho,1,7
-Illinois,0,3
+Illinois,0,2
 Illinois,1,18
 Indiana,0,4
 Indiana,1,8
 Iowa,0,1
 Iowa,1,8
-Kansas,1,7
+Kansas,1,5
 Kentucky,1,12
 Louisiana,1,9
 Maine,1,6
 Maryland,0,7
 Maryland,1,10
 Maryland,NA,6
-Massachusetts,0,4
-Massachusetts,1,12
+Massachusetts,0,3
+Massachusetts,1,13
 Michigan,0,5
 Michigan,1,20
 Michigan,NA,6
@@ -50,10 +50,10 @@ Montana,1,1
 Nebraska,0,1
 Nebraska,1,5
 Nebraska,NA,3
-Nevada,0,7
+Nevada,0,11
 Nevada,1,8
-Nevada,NA,4
-New Hampshire,0,2
+New Hampshire,0,1
+New Hampshire,1,1
 New Hampshire,NA,5
 New Jersey,0,5
 New Jersey,1,9
@@ -74,15 +74,15 @@ Pennsylvania,1,13
 Rhode Island,0,1
 Rhode Island,1,3
 Rhode Island,NA,3
-South Carolina,0,14
-South Carolina,1,7
+South Carolina,0,2
+South Carolina,1,19
 South Dakota,0,4
 South Dakota,1,2
 Tennessee,0,4
 Tennessee,1,5
 Tennessee,NA,2
-Texas,0,5
-Texas,1,87
+Texas,0,4
+Texas,1,88
 Utah,0,1
 Utah,1,1
 Vermont,0,2
@@ -91,8 +91,9 @@ Vermont,NA,1
 Virginia,0,11
 Virginia,1,28
 Washington,1,12
-West Virginia,0,10
-West Virginia,1,13
+West Virginia,0,1
+West Virginia,1,12
+West Virginia,NA,2
 Wisconsin,0,26
 Wisconsin,1,10
 Wyoming,0,2

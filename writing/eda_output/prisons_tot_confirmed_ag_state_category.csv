@@ -1,7 +1,8 @@
 State,state,region,Confirmed Program,Program Category,prisons_tot
 Alabama,AL,South,1,Horticulture,2
-Alaska,AK,West,1,Horticulture,3
-Arizona,AZ,West,1,Horticulture,2
+Alaska,AK,West,1,Food Production,1
+Alaska,AK,West,1,Horticulture,5
+Arizona,AZ,West,1,Horticulture,3
 Arkansas,AR,South,1,Animal Agriculture,6
 Arkansas,AR,South,1,Crops,6
 Arkansas,AR,South,1,Food Production,3
@@ -10,29 +11,28 @@ California,CA,West,1,Animal Agriculture,2
 California,CA,West,1,Crops,1
 California,CA,West,1,Food Production,1
 California,CA,West,1,Horticulture,3
-California,CA,West,1,Other,1
+California,CA,West,1,Other,2
 Colorado,CO,West,1,Animal Agriculture,5
 Colorado,CO,West,1,Crops,3
 Colorado,CO,West,1,Horticulture,19
 Connecticut,CT,Northeast,1,Horticulture,3
-Connecticut,CT,Northeast,1,Other,1
 Delaware,DE,South,1,Horticulture,3
 Florida,FL,South,1,Animal Agriculture,3
 Florida,FL,South,1,Crops,23
 Florida,FL,South,1,Food Production,1
-Florida,FL,South,1,Horticulture,5
+Florida,FL,South,1,Horticulture,36
 Florida,FL,South,1,Other,1
 Georgia,GA,South,1,Animal Agriculture,6
 Georgia,GA,South,1,Crops,8
 Georgia,GA,South,1,Food Production,6
 Georgia,GA,South,1,Horticulture,76
-Hawaii,HI,West,1,Animal Agriculture,1
+Hawaii,HI,West,1,Animal Agriculture,2
 Hawaii,HI,West,1,Horticulture,3
 Idaho,ID,West,1,Horticulture,7
 Idaho,ID,West,1,Other,2
 Illinois,IL,North Central,1,Food Production,2
 Illinois,IL,North Central,1,Horticulture,17
-Indiana,IN,North Central,1,Horticulture,7
+Indiana,IN,North Central,1,Horticulture,8
 Iowa,IA,North Central,1,Horticulture,7
 Kansas,KS,North Central,1,Animal Agriculture,1
 Kansas,KS,North Central,1,Horticulture,4
@@ -44,14 +44,14 @@ Louisiana,LA,South,1,Crops,3
 Louisiana,LA,South,1,Food Production,1
 Louisiana,LA,South,1,Horticulture,4
 Maine,ME,Northeast,1,Animal Agriculture,1
-Maine,ME,Northeast,1,Crops,1
+Maine,ME,Northeast,1,Crops,2
 Maine,ME,Northeast,1,Horticulture,1
 Maryland,MD,South,1,Animal Agriculture,2
 Maryland,MD,South,1,Crops,1
 Maryland,MD,South,1,Food Production,1
 Maryland,MD,South,1,Horticulture,7
 Maryland,MD,South,1,Other,1
-Massachusetts,MA,Northeast,1,Horticulture,8
+Massachusetts,MA,Northeast,1,Horticulture,9
 Michigan,MI,North Central,1,Horticulture,16
 Michigan,MI,North Central,1,Other,9
 Minnesota,MN,North Central,1,Animal Agriculture,3
@@ -65,11 +65,13 @@ Missouri,MO,North Central,1,Crops,1
 Missouri,MO,North Central,1,Food Production,2
 Missouri,MO,North Central,1,Horticulture,22
 Missouri,MO,North Central,1,Other,1
+Montana,MT,West,1,Horticulture,1
 Nebraska,NE,North Central,1,Horticulture,5
 Nebraska,NE,North Central,1,Other,1
 Nevada,NV,West,1,Animal Agriculture,1
 Nevada,NV,West,1,Crops,3
 Nevada,NV,West,1,Horticulture,5
+New Hampshire,NH,Northeast,1,Horticulture,1
 New Jersey,NJ,Northeast,1,Animal Agriculture,3
 New Jersey,NJ,Northeast,1,Crops,1
 New Jersey,NJ,Northeast,1,Food Production,1
@@ -89,36 +91,34 @@ Oklahoma,OK,South,1,Animal Agriculture,10
 Oklahoma,OK,South,1,Crops,9
 Oklahoma,OK,South,1,Food Production,2
 Oklahoma,OK,South,1,Horticulture,5
-Oklahoma,OK,South,1,Other,11
+Oklahoma,OK,South,1,Other,10
 Oregon,OR,West,1,Animal Agriculture,1
 Oregon,OR,West,1,Crops,1
 Oregon,OR,West,1,Horticulture,7
-Oregon,OR,West,1,Other,8
+Oregon,OR,West,1,Other,7
 Pennsylvania,PA,Northeast,1,Animal Agriculture,3
 Pennsylvania,PA,Northeast,1,Crops,1
 Pennsylvania,PA,Northeast,1,Horticulture,9
 Pennsylvania,PA,Northeast,1,Other,1
 Rhode Island,RI,Northeast,1,Horticulture,1
-South Carolina,SC,South,1,Animal Agriculture,3
-South Carolina,SC,South,1,Crops,3
-South Carolina,SC,South,1,Food Production,1
-South Carolina,SC,South,1,Horticulture,5
+South Carolina,SC,South,1,Animal Agriculture,8
+South Carolina,SC,South,1,Crops,4
+South Carolina,SC,South,1,Horticulture,17
 South Dakota,SD,North Central,1,Horticulture,2
 Tennessee,TN,South,1,Animal Agriculture,1
 Tennessee,TN,South,1,Crops,2
 Tennessee,TN,South,1,Horticulture,5
 Texas,TX,South,1,Animal Agriculture,63
 Texas,TX,South,1,Crops,47
-Texas,TX,South,1,Food Production,8
-Texas,TX,South,1,Horticulture,59
+Texas,TX,South,1,Food Production,9
+Texas,TX,South,1,Horticulture,62
 Texas,TX,South,1,Other,4
 Utah,UT,West,1,Horticulture,1
 Vermont,VT,Northeast,1,Horticulture,3
 Virginia,VA,South,1,Animal Agriculture,19
 Virginia,VA,South,1,Crops,21
 Virginia,VA,South,1,Food Production,2
-Virginia,VA,South,1,Horticulture,22
-Virginia,VA,South,1,Other,7
+Virginia,VA,South,1,Horticulture,24
 Washington,WA,West,1,Animal Agriculture,11
 Washington,WA,West,1,Crops,1
 Washington,WA,West,1,Horticulture,12
