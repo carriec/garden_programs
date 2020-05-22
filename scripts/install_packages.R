@@ -17,6 +17,8 @@ install.packages("tidycensus")
 install.packages("maps")
 install.packages("geojsonR")
 install.packages("tmaptools")
+install.packages("geojsonio")
+install_github("ropensci/geojsonio")
 
 install.packages("maptools")
 install.packages("mapproj")
@@ -34,6 +36,8 @@ install.packages("RCurl")
 
 install.packages("xaringan")
 
+install.packages("cowplot") #for making pretty plots with ggplot2
+
 #Package for quickly converting numbers to integers
 install.packages("hablar")
 
@@ -42,3 +46,9 @@ install.packages("ggmosaic")
 
 #Package for record linkage
 install.packages("RecordLinkage")
+
+#Package for working with categorical variables (factors)
+install.packages("forcats")
+
+#Package for converting values to null (NA)
+install.packages("naniar")

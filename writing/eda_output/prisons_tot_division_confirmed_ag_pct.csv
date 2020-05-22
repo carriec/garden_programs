@@ -1,0 +1,10 @@
+region,division,all_prisons,facilities_confirmed_ag,pct
+Midwest,East North Central,135,73,0.5407407407407407
+Midwest,West North Central,80,52,0.65
+Northeast,New England,53,21,0.39622641509433965
+Northeast,Middle Atlantic,87,45,0.5172413793103449
+South,South Atlantic,311,192,0.617363344051447
+South,East South Central,41,16,0.3902439024390244
+South,West South Central,142,120,0.8450704225352113
+West,Mountain,71,42,0.5915492957746479
+West,Pacific,77,41,0.5324675324675324

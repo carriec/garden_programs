@@ -1,4 +1,4 @@
-state,region,Confirmed Program,Program Category,Subcategory,prisons_tot
+state,region,Confirmed Program,Program Category,Subcategory,confirmed_ag_prisons
 AK,West,1,Food Production,other: seafood handling,1
 AK,West,1,Horticulture,garden,4
 AK,West,1,Horticulture,greenhouse,1
@@ -47,12 +47,11 @@ DE,South,1,Horticulture,unspecified horticulture,1
 FL,South,1,Animal Agriculture,beekeeping,1
 FL,South,1,Animal Agriculture,livestock,2
 FL,South,1,Crops,crops,22
-FL,South,1,Crops,hayproduction,1
+FL,South,1,Crops,hay production,1
 FL,South,1,Crops,silviculture,1
 FL,South,1,Food Production,slaughterhouse,1
-FL,South,1,Horticulture,flower garden,1
 FL,South,1,Horticulture,greenhouse,1
-FL,South,1,Horticulture,grounds keeping,36
+FL,South,1,Horticulture,groundskeeping,36
 FL,South,1,Horticulture,landscaping,2
 FL,South,1,Horticulture,nursery,1
 FL,South,1,Other,chemical application certification,1
@@ -62,52 +61,52 @@ GA,South,1,Animal Agriculture,livestock,4
 GA,South,1,Animal Agriculture,poultry,2
 GA,South,1,Crops,crops,8
 GA,South,1,Food Production,cannery,2
+GA,South,1,Food Production,dairy processing,1
 GA,South,1,Food Production,feed mill,4
-GA,South,1,Food Production,food processing,1
-GA,South,1,Food Production,food procseesing,1
+GA,South,1,Food Production,food processing,2
 GA,South,1,Food Production,meat processing,1
-GA,South,1,Horticulture,groundskeeping,68
+GA,South,1,Horticulture,groundskeeping,58
 GA,South,1,Horticulture,horticulture,1
-GA,South,1,Horticulture,horticulture program,34
+GA,South,1,Horticulture,horticulture program,31
 GA,South,1,Horticulture,horticulture programl groundskeeping,1
-GA,South,1,Horticulture,landscaping,27
+GA,South,1,Horticulture,landscaping,26
 HI,West,1,Animal Agriculture,aquaculture,1
 HI,West,1,Animal Agriculture,livestock,1
 HI,West,1,Horticulture,farm,1
 HI,West,1,Horticulture,horticulture program,2
 HI,West,1,Horticulture,landscaping,1
 HI,West,1,Horticulture,nursery,1
-IA,North Central,1,Horticulture,farm,1
-IA,North Central,1,Horticulture,garden,2
-IA,North Central,1,Horticulture,landscaping,1
-IA,North Central,1,Horticulture,unspecified horticulture,3
+IA,Midwest,1,Horticulture,farm,1
+IA,Midwest,1,Horticulture,garden,2
+IA,Midwest,1,Horticulture,landscaping,1
+IA,Midwest,1,Horticulture,unspecified horticulture,3
 ID,West,1,Horticulture,garden,4
 ID,West,1,Horticulture,greenhouse,2
 ID,West,1,Horticulture,horticulture program,1
 ID,West,1,Horticulture,other: sagebrush cultivation,2
 ID,West,1,Other,sagebrush in prisons program,2
-IL,North Central,1,Food Production,dairy,1
-IL,North Central,1,Food Production,food processing,2
-IL,North Central,1,Food Production,other: juice production,1
-IL,North Central,1,Food Production,other: spice production,1
-IL,North Central,1,Horticulture,composting,1
-IL,North Central,1,Horticulture,garden,3
-IL,North Central,1,Horticulture,greenhouse,2
-IL,North Central,1,Horticulture,horticulture program,9
-IL,North Central,1,Horticulture,unspecified horticulture,5
-IL,North Central,1,Horticulture,unspecified horticulture program,1
-IN,North Central,1,Horticulture,garden,3
-IN,North Central,1,Horticulture,greenhouse,1
-IN,North Central,1,Horticulture,horticulture program,2
-IN,North Central,1,Horticulture,landscaping,3
-IN,North Central,1,Horticulture,master gardener class,3
-IN,North Central,1,Horticulture,unspecified horticulture,1
-KS,North Central,1,Animal Agriculture,livestock,1
-KS,North Central,1,Horticulture,composting,1
-KS,North Central,1,Horticulture,garden,3
-KS,North Central,1,Horticulture,landscaping,1
-KS,North Central,1,Horticulture,master gardener program,1
-KS,North Central,1,Horticulture,unspecified horticulture,1
+IL,Midwest,1,Food Production,dairy,1
+IL,Midwest,1,Food Production,food processing,2
+IL,Midwest,1,Food Production,other: juice production,1
+IL,Midwest,1,Food Production,other: spice production,1
+IL,Midwest,1,Horticulture,composting,1
+IL,Midwest,1,Horticulture,garden,3
+IL,Midwest,1,Horticulture,greenhouse,2
+IL,Midwest,1,Horticulture,horticulture program,10
+IL,Midwest,1,Horticulture,unspecified horticulture,4
+IL,Midwest,1,Horticulture,unspecified horticulture program,1
+IN,Midwest,1,Horticulture,garden,3
+IN,Midwest,1,Horticulture,greenhouse,1
+IN,Midwest,1,Horticulture,horticulture program,3
+IN,Midwest,1,Horticulture,landscaping,3
+IN,Midwest,1,Horticulture,master gardener class,3
+IN,Midwest,1,Horticulture,unspecified horticulture,1
+KS,Midwest,1,Animal Agriculture,livestock,1
+KS,Midwest,1,Horticulture,composting,1
+KS,Midwest,1,Horticulture,garden,3
+KS,Midwest,1,Horticulture,landscaping,1
+KS,Midwest,1,Horticulture,master gardener program,1
+KS,Midwest,1,Horticulture,unspecified horticulture,1
 KY,South,1,Animal Agriculture,equine,2
 KY,South,1,Animal Agriculture,livestock,1
 KY,South,1,Crops,crops,1
@@ -139,50 +138,50 @@ MD,South,1,Other,other: state central kitchen,1
 ME,Northeast,1,Animal Agriculture,livestock,1
 ME,Northeast,1,Crops,crops,2
 ME,Northeast,1,Horticulture,composting,1
-ME,Northeast,1,Horticulture,garden,1
+ME,Northeast,1,Horticulture,garden,2
 ME,Northeast,1,Horticulture,greenhouse,1
+ME,Northeast,1,Horticulture,landscaping,1
 ME,Northeast,1,Horticulture,master gardener class,1
-MI,North Central,1,Horticulture,composting,1
-MI,North Central,1,Horticulture,flower garden,3
-MI,North Central,1,Horticulture,garden,15
-MI,North Central,1,Horticulture,greenhouse,4
-MI,North Central,1,Horticulture,horticulture program,3
-MI,North Central,1,Horticulture,landscaping,1
-MI,North Central,1,Horticulture,other: horticultural therapy,1
-MI,North Central,1,Horticulture,other: pesticide management,1
-MI,North Central,1,Horticulture,other: vegetable and flower starters,1
-MI,North Central,1,Other,farmers market,1
-MI,North Central,1,Other,food technology,9
-MN,North Central,1,Animal Agriculture,beekeeping,2
-MN,North Central,1,Animal Agriculture,other: butterfly hatchery,1
-MN,North Central,1,Crops,orchard,3
-MN,North Central,1,Food Production,other: honey production,1
-MN,North Central,1,Horticulture,composting,2
-MN,North Central,1,Horticulture,flower garden,2
-MN,North Central,1,Horticulture,garden,7
-MN,North Central,1,Horticulture,greenhouse,1
-MN,North Central,1,Horticulture,horticulture program,1
-MN,North Central,1,Horticulture,other: aquaponics,1
-MN,North Central,1,Horticulture,other: hydroponics,1
-MN,North Central,1,Horticulture,pollinator garden,2
-MN,North Central,1,Horticulture,pollinator habitat,1
-MO,North Central,1,Animal Agriculture,beekeeping,1
-MO,North Central,1,Animal Agriculture,other: eggs,1
-MO,North Central,1,Crops,orchard,1
-MO,North Central,1,Food Production,food processing,2
-MO,North Central,1,Horticulture,arboriculture,1
-MO,North Central,1,Horticulture,composting,2
-MO,North Central,1,Horticulture,flower garden,1
-MO,North Central,1,Horticulture,garden,22
-MO,North Central,1,Horticulture,greenhouse,8
-MO,North Central,1,Horticulture,horticulture program,1
-MO,North Central,1,Horticulture,landscaping,4
-MO,North Central,1,Horticulture,pest management,4
-MO,North Central,1,Horticulture,pollinator garden,1
-MO,North Central,1,Other,other: mealpacking and donation,1
+MI,Midwest,1,Horticulture,composting,1
+MI,Midwest,1,Horticulture,flower garden,3
+MI,Midwest,1,Horticulture,garden,15
+MI,Midwest,1,Horticulture,greenhouse,4
+MI,Midwest,1,Horticulture,horticulture program,3
+MI,Midwest,1,Horticulture,landscaping,1
+MI,Midwest,1,Horticulture,other: horticultural therapy,1
+MI,Midwest,1,Horticulture,other: pesticide management,1
+MI,Midwest,1,Horticulture,other: vegetable and flower starters,1
+MI,Midwest,1,Other,farmers market,1
+MI,Midwest,1,Other,food technology,9
+MN,Midwest,1,Animal Agriculture,beekeeping,2
+MN,Midwest,1,Animal Agriculture,other: butterfly hatchery,1
+MN,Midwest,1,Crops,orchard,3
+MN,Midwest,1,Food Production,other: honey production,1
+MN,Midwest,1,Horticulture,composting,2
+MN,Midwest,1,Horticulture,flower garden,2
+MN,Midwest,1,Horticulture,garden,7
+MN,Midwest,1,Horticulture,greenhouse,1
+MN,Midwest,1,Horticulture,horticulture program,1
+MN,Midwest,1,Horticulture,other: aquaponics,1
+MN,Midwest,1,Horticulture,other: hydroponics,1
+MN,Midwest,1,Horticulture,pollinator garden,2
+MN,Midwest,1,Horticulture,pollinator habitat,1
+MO,Midwest,1,Animal Agriculture,beekeeping,1
+MO,Midwest,1,Animal Agriculture,other: eggs,1
+MO,Midwest,1,Crops,orchard,1
+MO,Midwest,1,Food Production,food processing,2
+MO,Midwest,1,Horticulture,arboriculture,1
+MO,Midwest,1,Horticulture,composting,2
+MO,Midwest,1,Horticulture,flower garden,1
+MO,Midwest,1,Horticulture,garden,22
+MO,Midwest,1,Horticulture,greenhouse,8
+MO,Midwest,1,Horticulture,horticulture program,1
+MO,Midwest,1,Horticulture,landscaping,4
+MO,Midwest,1,Horticulture,pest management,4
+MO,Midwest,1,Horticulture,pollinator garden,1
+MO,Midwest,1,Other,other: mealpacking and donation,1
 MS,South,1,Crops,crops,2
 MS,South,1,Horticulture,garden,1
-MS,South,1,Horticulture,horticulture program,3
 MS,South,1,Horticulture,landscaping,1
 MT,West,1,Horticulture,unspecified horticulture,1
 NC,South,1,Crops,crops,8
@@ -193,24 +192,22 @@ NC,South,1,Horticulture,flower garden,2
 NC,South,1,Horticulture,garden,1
 NC,South,1,Horticulture,greenhouse,1
 NC,South,1,Horticulture,horticulture program,21
-ND,North Central,1,Horticulture,garden,3
-NE,North Central,1,Horticulture,flower garden,3
-NE,North Central,1,Horticulture,garden,4
-NE,North Central,1,Horticulture,pollinator habitat,1
-NE,North Central,1,Other,gardening enterprise course,1
+ND,Midwest,1,Horticulture,garden,3
+NE,Midwest,1,Horticulture,flower garden,3
+NE,Midwest,1,Horticulture,garden,4
+NE,Midwest,1,Horticulture,pollinator habitat,1
+NE,Midwest,1,Other,gardening enterprise course,1
 NH,Northeast,1,Horticulture,garden,1
-NJ,Northeast,1,Animal Agriculture,dairy,1
-NJ,Northeast,1,Animal Agriculture,livestock,2
-NJ,Northeast,1,Crops,crops,1
+NJ,Northeast,1,Animal Agriculture,dairy,2
 NJ,Northeast,1,Food Production,food processing,1
 NJ,Northeast,1,Food Production,meat processing,1
 NJ,Northeast,1,Horticulture,flower garden,1
 NJ,Northeast,1,Horticulture,greenhouse,1
-NJ,Northeast,1,Horticulture,horticulture program,2
-NJ,Northeast,1,Horticulture,horticulture vocational training,5
-NJ,Northeast,1,Horticulture,landscaping,6
-NJ,Northeast,1,Horticulture,other,1
-NJ,Northeast,1,Horticulture,pesticide applicator,5
+NJ,Northeast,1,Horticulture,horticulture program,4
+NJ,Northeast,1,Horticulture,landscaping,3
+NJ,Northeast,1,Horticulture,other,2
+NJ,Northeast,1,Horticulture,other pesticide applicator,1
+NJ,Northeast,1,Horticulture,pesticide applicator,2
 NJ,Northeast,1,Horticulture,unspecified horticulture,1
 NM,West,1,Horticulture,greenhouse,1
 NV,West,1,Animal Agriculture,livestock,1
@@ -222,44 +219,39 @@ NV,West,1,Horticulture,other: horticultural class,1
 NV,West,1,Horticulture,unspecified horticulture,1
 NY,Northeast,1,Animal Agriculture,livestock,1
 NY,Northeast,1,Horticulture,garden,1
-NY,Northeast,1,Horticulture,unspecified horticulture,29
-OH,North Central,1,Animal Agriculture,beekeeping,2
-OH,North Central,1,Animal Agriculture,livestock,12
-OH,North Central,1,Food Production,coffee and tea,1
-OH,North Central,1,Food Production,meat processing,1
-OH,North Central,1,Food Production,unspecified food production,3
-OH,North Central,1,Horticulture,composting,1
-OH,North Central,1,Horticulture,garden,4
-OH,North Central,1,Horticulture,landscaping,9
-OH,North Central,1,Horticulture,other,1
-OH,North Central,1,Horticulture,turf management,1
-OH,North Central,1,Horticulture,unspecified horticulture,9
-OH,North Central,1,Other,food bank,2
-OH,North Central,1,Other,nutrition education,1
+NY,Northeast,1,Horticulture,horticulture program,1
+NY,Northeast,1,Horticulture,unspecified horticulture,27
+OH,Midwest,1,Animal Agriculture,beekeeping,2
+OH,Midwest,1,Food Production,coffee and tea,1
+OH,Midwest,1,Food Production,meat processing,1
+OH,Midwest,1,Food Production,unspecified food production,3
+OH,Midwest,1,Horticulture,composting,3
+OH,Midwest,1,Horticulture,garden,4
+OH,Midwest,1,Horticulture,horticulture program,3
+OH,Midwest,1,Horticulture,landscaping,11
+OH,Midwest,1,Horticulture,other,1
+OH,Midwest,1,Horticulture,turf management,1
+OH,Midwest,1,Horticulture,unspecified horticulture,7
+OH,Midwest,1,Other,nutrition education,1
 OK,South,1,Animal Agriculture,livestock,10
 OK,South,1,Crops,crops,8
-OK,South,1,Crops,firewood,1
+OK,South,1,Crops,firewood,6
 OK,South,1,Crops,orchard,1
-OK,South,1,Crops,other,1
+OK,South,1,Crops,other,6
+OK,South,1,Crops,sawmill,1
 OK,South,1,Food Production,dairy processing,1
+OK,South,1,Food Production,feed mill,1
 OK,South,1,Food Production,food processing,1
 OK,South,1,Food Production,meat processing,1
 OK,South,1,Horticulture,flower garden,1
-OK,South,1,Horticulture,garden,2
+OK,South,1,Horticulture,garden,3
 OK,South,1,Horticulture,greenhouse,1
-OK,South,1,Horticulture,horticulture therapy,2
-OK,South,1,Horticulture,unspecified horticulture,1
-OK,South,1,Other,dry goods warehouse,1
+OK,South,1,Horticulture,horticulture program,2
 OK,South,1,Other,farm or ranch?,2
-OK,South,1,Other,feed mill,1
-OK,South,1,Other,firewood,5
-OK,South,1,Other,leather shop,1
-OK,South,1,Other,opportunity food buy program,1
-OK,South,1,Other,opportunity food buys warehouse,1
-OK,South,1,Other,sawmill,1
 OR,West,1,Animal Agriculture,beekeeping,1
 OR,West,1,Crops,silviculture,1
-OR,West,1,Horticulture,garden,5
+OR,West,1,Horticulture,composting,1
+OR,West,1,Horticulture,garden,6
 OR,West,1,Horticulture,landscaping,3
 OR,West,1,Horticulture,master gardener class,1
 OR,West,1,Other,farm or ranch?,7
@@ -270,27 +262,28 @@ PA,Northeast,1,Horticulture,arboriculture training,1
 PA,Northeast,1,Horticulture,composting,1
 PA,Northeast,1,Horticulture,garden,6
 PA,Northeast,1,Horticulture,greenhouse,1
-PA,Northeast,1,Horticulture,horticulture vocational training,3
+PA,Northeast,1,Horticulture,horticulture program,3
 PA,Northeast,1,Horticulture,landscaping,2
 PA,Northeast,1,Horticulture,other,1
 PA,Northeast,1,Horticulture,unspecified horticulture,1
-PA,Northeast,1,Other,riparian buffer vocational training project,1
 RI,Northeast,1,Horticulture,flower garden,1
 RI,Northeast,1,Horticulture,garden,1
 SC,South,1,Animal Agriculture,beekeeping,7
 SC,South,1,Animal Agriculture,dairy,1
 SC,South,1,Animal Agriculture,livestock,1
 SC,South,1,Animal Agriculture,poultry,1
-SC,South,1,Crops,crops,3
-SC,South,1,Crops,silviculture,1
-SC,South,1,Horticulture,greenhouse,16
+SC,South,1,Crops,crops,4
+SC,South,1,Crops,livestock,1
+SC,South,1,Crops,silviculture,7
+SC,South,1,Food Production,feed mill,1
+SC,South,1,Horticulture,greenhouse,17
 SC,South,1,Horticulture,horticulture program,17
-SD,North Central,1,Horticulture,garden,2
+SD,Midwest,1,Horticulture,garden,2
 TN,South,1,Animal Agriculture,dairy,1
 TN,South,1,Crops,crops,2
 TN,South,1,Horticulture,garden,2
 TN,South,1,Horticulture,greenhouse,1
-TN,South,1,Horticulture,horticulture vocational training,1
+TN,South,1,Horticulture,horticulture program,1
 TN,South,1,Horticulture,unspecified horticulture,1
 TX,South,1,Animal Agriculture,beekeeping,2
 TX,South,1,Animal Agriculture,livestock,63
@@ -298,13 +291,11 @@ TX,South,1,Crops,crops,46
 TX,South,1,Crops,orchard,1
 TX,South,1,Crops,silviculture,1
 TX,South,1,Food Production,cannery,2
-TX,South,1,Food Production,feed mill,1
-TX,South,1,Food Production,food bank,5
+TX,South,1,Food Production,feed mill,5
 TX,South,1,Food Production,meat processing,1
 TX,South,1,Food Production,other,1
-TX,South,1,Horticulture,garden,62
-TX,South,1,Horticulture,horticulture vocational training,1
-TX,South,1,Other,food bank,4
+TX,South,1,Horticulture,garden,65
+TX,South,1,Horticulture,horticulture program,1
 UT,West,1,Horticulture,greenhouse,1
 VA,South,1,Animal Agriculture,aquaculture,1
 VA,South,1,Animal Agriculture,dairy,1
@@ -315,52 +306,28 @@ VA,South,1,Food Production,food processing,2
 VA,South,1,Food Production,meat processing,1
 VA,South,1,Horticulture,composting,15
 VA,South,1,Horticulture,garden,8
-VA,South,1,Horticulture,geenhouse,1
-VA,South,1,Horticulture,greenhouse,11
-VA,South,1,Horticulture,horticulture program,7
+VA,South,1,Horticulture,greenhouse,12
+VA,South,1,Horticulture,horticulture program,6
 VT,Northeast,1,Horticulture,garden,2
-VT,Northeast,1,Horticulture,horticulture vocational training,1
+VT,Northeast,1,Horticulture,horticulture program,1
 WA,West,1,Animal Agriculture,aquaculture,1
 WA,West,1,Animal Agriculture,beekeeping,11
 WA,West,1,Crops,crops,1
+WA,West,1,Crops,firewood,2
+WA,West,1,Crops,other,2
+WA,West,1,Crops,silviculture,2
 WA,West,1,Horticulture,composting,10
 WA,West,1,Horticulture,flower garden,8
 WA,West,1,Horticulture,garden,10
 WA,West,1,Horticulture,greenhouse,3
-WA,West,1,Horticulture,horticulture vocational training,2
+WA,West,1,Horticulture,horticulture program,2
 WA,West,1,Horticulture,unspecified horticulture,2
-WA,West,1,Other,aquaponics,2
-WA,West,1,Other,butterfly food source planting,1
-WA,West,1,Other,conservation,1
-WA,West,1,Other,diversity garden,1
-WA,West,1,Other,firewood,1
-WA,West,1,Other,firewood donation,1
-WA,West,1,Other,food waste reduction,1
-WA,West,1,Other,grace program,1
-WA,West,1,Other,green building,1
-WA,West,1,Other,green zone,1
-WA,West,1,Other,heritage garden,1
-WA,West,1,Other,institutional sustainability garden,1
-WA,West,1,Other,lifer garden,1
-WA,West,1,Other,maintain city public flowers,1
-WA,West,1,Other,monarch butterfly program,1
-WA,West,1,Other,offsite farming crew,1
-WA,West,1,Other,plant and animal habitats,1
-WA,West,1,Other,polinator garden,1
-WA,West,1,Other,pollinator garden,1
-WA,West,1,Other,pollinator habitat and forage,1
-WA,West,1,Other,prairie conservation nursery,3
-WA,West,1,Other,roots of success,10
-WA,West,1,Other,seeds to supper,1
-WA,West,1,Other,vermiculture,1
-WI,North Central,1,Animal Agriculture,beekeeping,1
-WI,North Central,1,Crops,orchard,1
-WI,North Central,1,Food Production,dairy processing,1
-WI,North Central,1,Horticulture,garden,2
-WI,North Central,1,Horticulture,unspecified horticulture,1
-WI,North Central,1,Other,community youth garden program,1
-WI,North Central,1,Other,dairy worker certification program,1
-WI,North Central,1,Other,pheasant farm,1
+WI,Midwest,1,Animal Agriculture,beekeeping,1
+WI,Midwest,1,Animal Agriculture,livestock,1
+WI,Midwest,1,Crops,orchard,1
+WI,Midwest,1,Food Production,dairy processing,1
+WI,Midwest,1,Horticulture,garden,2
+WI,Midwest,1,Horticulture,unspecified horticulture,1
 WV,South,1,Crops,crops,3
 WV,South,1,Horticulture,garden,8
 WV,South,1,Horticulture,greenhouse,1

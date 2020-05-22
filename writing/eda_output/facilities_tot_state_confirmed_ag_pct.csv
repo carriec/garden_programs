@@ -1,0 +1,51 @@
+State,state,region,division.x,facilities_tot,division.y,facilities_confirmed_ag,pct
+Alabama,AL,South,East South Central,15,East South Central,2,0.13333333333333333
+Alaska,AK,West,Pacific,12,Pacific,5,0.4166666666666667
+Arizona,AZ,West,Mountain,9,Mountain,3,0.3333333333333333
+Arkansas,AR,South,West South Central,17,West South Central,12,0.7058823529411765
+California,CA,West,Pacific,35,Pacific,7,0.2
+Colorado,CO,West,Mountain,19,Mountain,19,1
+Connecticut,CT,Northeast,New England,12,New England,3,0.25
+Delaware,DE,South,South Atlantic,4,South Atlantic,3,0.75
+Florida,FL,South,South Atlantic,91,South Atlantic,36,0.3956043956043956
+Georgia,GA,South,South Atlantic,65,South Atlantic,65,1
+Hawaii,HI,West,Pacific,4,Pacific,3,0.75
+Idaho,ID,West,Mountain,9,Mountain,7,0.7777777777777778
+Illinois,IL,Midwest,East North Central,25,East North Central,17,0.68
+Indiana,IN,Midwest,East North Central,16,East North Central,9,0.5625
+Iowa,IA,Midwest,West North Central,9,West North Central,7,0.7777777777777778
+Kansas,KS,Midwest,West North Central,8,West North Central,5,0.625
+Kentucky,KY,South,East South Central,12,East South Central,6,0.5
+Louisiana,LA,South,West South Central,9,West South Central,8,0.8888888888888888
+Maine,ME,Northeast,New England,5,New England,4,0.8
+Maryland,MD,South,South Atlantic,23,South Atlantic,10,0.43478260869565216
+Massachusetts,MA,Northeast,New England,16,New England,9,0.5625
+Michigan,MI,Midwest,East North Central,31,East North Central,20,0.6451612903225806
+Minnesota,MN,Midwest,West North Central,13,West North Central,8,0.6153846153846154
+Mississippi,MS,South,East South Central,3,East South Central,3,1
+Missouri,MO,Midwest,West North Central,32,West North Central,22,0.6875
+Montana,MT,West,Mountain,2,Mountain,1,0.5
+Nebraska,NE,Midwest,West North Central,9,West North Central,5,0.5555555555555556
+Nevada,NV,West,Mountain,19,Mountain,7,0.3684210526315789
+New Hampshire,NH,Northeast,New England,7,New England,1,0.14285714285714285
+New Jersey,NJ,Northeast,Middle Atlantic,11,Middle Atlantic,6,0.5454545454545454
+New Mexico,NM,West,Mountain,6,Mountain,1,0.16666666666666666
+New York,NY,Northeast,Middle Atlantic,51,Middle Atlantic,29,0.5686274509803921
+North Carolina,NC,South,South Atlantic,55,South Atlantic,25,0.45454545454545453
+North Dakota,ND,Midwest,West North Central,3,West North Central,3,1
+Ohio,OH,Midwest,East North Central,27,East North Central,22,0.8148148148148148
+Oklahoma,OK,South,West South Central,24,West South Central,15,0.625
+Oregon,OR,West,Pacific,14,Pacific,14,1
+Pennsylvania,PA,Northeast,Middle Atlantic,25,Middle Atlantic,10,0.4
+Rhode Island,RI,Northeast,New England,7,New England,1,0.14285714285714285
+South Carolina,SC,South,South Atlantic,22,South Atlantic,18,0.8181818181818182
+South Dakota,SD,Midwest,West North Central,6,West North Central,2,0.3333333333333333
+Tennessee,TN,South,East South Central,11,East South Central,5,0.45454545454545453
+Texas,TX,South,West South Central,92,West South Central,85,0.9239130434782609
+Utah,UT,West,Mountain,2,Mountain,1,0.5
+Vermont,VT,Northeast,New England,6,New England,3,0.5
+Virginia,VA,South,South Atlantic,38,South Atlantic,27,0.7105263157894737
+Washington,WA,West,Pacific,12,Pacific,12,1
+West Virginia,WV,South,South Atlantic,13,South Atlantic,8,0.6153846153846154
+Wisconsin,WI,Midwest,East North Central,36,East North Central,5,0.1388888888888889
+Wyoming,WY,West,Mountain,5,Mountain,3,0.6
