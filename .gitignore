@@ -32,6 +32,8 @@ data/icpsr_data/
 data/raw_data/
 # Prison boundary data
 data/hifld_data/
+# COVID-19 behind bars data
+data/covid-19_behind_bars_data/
 # Slides
 slides/
 # Literature and annotated bibliographies
