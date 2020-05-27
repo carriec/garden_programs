@@ -52,3 +52,8 @@ install.packages("forcats")
 
 #Package for converting values to null (NA)
 install.packages("naniar")
+
+#Update all packages
+update.packages(ask = FALSE)
+
+install.packages("dplyr")

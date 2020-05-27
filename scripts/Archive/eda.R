@@ -30,20 +30,20 @@ library(naniar)
 ########Importing Prison Food/Ag Program Data########
 
 #read in imported food/ag program data - states
-Becca_States <- read_excel("./data/raw_data/2020-05-26/Correctional_Facility_Hort_Programs_Becca.xlsx")
+Becca_States <- read_excel("./data/raw_data/2020-02-16/Correctional_Facility_Ag_Hort_Garden_Becca_States_SUMMER.xlsx")
 Becca_States <- Becca_States[1:145,c(1:3, 20:25,27)]
-Addy_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Addy_States_SUMMER.xlsx")
+Addy_States <- read_excel("data/raw_data/2020-02-16/Correctional_Facility_Contact_Tracking_Addy_States_SUMMER.xlsx")
 Addy_States <- Addy_States[, c(1:3, 15:21)]
-Josh_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Josh_States_NEWEST.xlsx")
+Josh_States <- read_excel("data/raw_data/2020-02-16/Correctional_Facility_Contact_Tracking_Josh_States_SUMMER.xlsx")
 Josh_States <- Josh_States[, c(1:3, 15:21)]
-Carrie_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Carrie_States.xlsx")
+Carrie_States <- read_excel("data/raw_data/2020-02-16/Correctional_Facility_Contact_Tracking_Carrie_States.xlsx")
 Carrie_States <- Carrie_States[, c(7,4,30,42:48)] %>%
   convert(dbl(`Confirmed_Program`))
-Azmal_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Azmal_States_SUMMER.xlsx")
-Azmal_States <- Azmal_States[, c(1:3, 16:20, 22:23)]
+Azmal_States <- read_excel("data/raw_data/2020-02-16/Correctional_Facility_Contact_Tracking_Azmal_States_SUMMER.xlsx")
+Azmal_States <- Azmal_States[, c(1:3, 16:22)]
 Azmal_States <- Azmal_States %>%
   filter(State %in% c("Florida", "Nevada"))
-Evan_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Evan_States_SUMMER.xlsx")
+Evan_States <- read_excel("data/raw_data/2020-02-16/Correctional_Facility_Contact_Tracking_Evan_States_SUMMER.xlsx")
 Evan_States <- Evan_States[, c(1:3, 15:21)]
 
 ########Cleaning Data########
@@ -103,49 +103,18 @@ All_States <-
   left_join(region_state)
 
 #Add rownames as a column to All States data
-#All_States <- All_States %>%
-#  rownames_to_column(var = "row_num")
+All_States <- All_States %>%
+  rownames_to_column(var = "id")
 
 #Convert Confirmed Program to numeric
 All_States <- All_States %>%
-  convert(num(`Confirmed Program`))
+  mutate(`Confirmed Program` = as.numeric(`Confirmed Program`))
 
 #remove unneeded data
 rm(Addy_States, All_Other_States, Azmal_States, Becca_States, Carrie_States,
             Evan_States, f, fips_codes, Josh_States)
+rm(addy, azmal, becca, carrie, evan, josh)
 rm(region_state)
-
-#Import Assigned IDs from original February, 2020 dataset
-All_States_archive <- readRDS(file = "data/raw_data/2020-02-16/All_States.Rds")
-All_States_archive <- All_States_archive %>%
-  select(id, state, `Name of Correctional Facility`)
-
-#Join id based on the state and correctional facility
-All_States <- All_States %>%
-  left_join(All_States_archive, by = c("state", "Name of Correctional Facility"))
-
-#Remove archived file
-rm(All_States_archive)
-
-#Convert id to integer
-All_States <- All_States %>%
-  convert(int(id))
-
-#Add ID (next sequential) for new entry (Wisconsin resource center)
-All_States <- All_States %>%
-  mutate(id = replace_na(id, 998))
-
-#Relocate ID to first column
-#All_States <- All_States %>%
-#  relocate(id)
-All_States <- All_States %>%
-  select(id, everything())
-
-#Save May 2020 data locally in project files
-saveRDS(All_States, file = "data/raw_data/2020-05-26/All_States.Rds")
-
-#Load May 2020 data
-All_States <- readRDS(file = "data/raw_data/2020-05-26/All_States.Rds")
 
 ########Importing HIFLD Data########
 
@@ -175,11 +144,11 @@ ggplot() +
 #Convert HIFLD spatial data to data frame and save as Rdata
 hifld.no_sf <- as.data.frame(hifld) 
 class(hifld.no_sf) 
-saveRDS(hifld.no_sf, file = "data/hifld_data/2020-05-26/hifld_no_sf.Rds")
+saveRDS(hifld.no_sf, file = "data/hifld_data/2020-02-15/hifld_no_sf.Rds")
 rm(hifld)
 
 #Load
-hifld.no_sf <- readRDS(file = "data/hifld_data/2020-05-26/hifld_no_sf.Rds")
+hifld.no_sf <- readRDS(file = "data/hifld_data/2020-02-15/hifld_no_sf.Rds")
 
 #Select open adult (not juvenile) state facilities, excluding Puerto Rico and Washington, D.C. Add row numbers as column.
 hifld.filter <- hifld.no_sf %>%
@@ -191,39 +160,276 @@ hifld.filter <- hifld.filter %>%
 
 rm(hifld.no_sf)
 
-########Linking records from HIFLD for new prison ag entry########
+#Save February 2020 data locally in project files
+saveRDS(All_States, file = "data/raw_data/2020-02-16/All_States.Rds")
 
-#Part I: Connect records via prior (February 2020) record linkage key between HIFLD data and our collected data
-#(see: https://rpubs.com/ahmademad/RecordLinkage), (see: "scripts/Archive/eda.R" and "writing/eda_output_internal/PrisonAg_HIFLD_ID_key.csv")
+#Load February 2020 data
+All_States <- readRDS(file = "data/raw_data/2020-02-16/All_States.Rds")
 
-key.archive <- read_csv("writing/eda_output_internal/Archive/PrisonAg_HIFLD_ID_key.csv")
+########Performing Record Linkage########
 
-All_States <- All_States %>%
-  rename(ID.PrisonAg = id) %>%
-  mutate(NAME = toupper(`Name of Correctional Facility`))
+#Part I: Perform record linkage between HIFLD data and our collected data
+#(see: https://rpubs.com/ahmademad/RecordLinkage)
 
-#Locate the new facility in the updated All States data (Wisconsin Resource Center), and find the matching record in the HIFLD data
-wrc <- hifld.no_sf %>%
-  filter(NAME == "WISCONSIN RESOURCE CENTER") %>%
-  convert(int(FACILITYID)) %>%
-  select(FID, OBJECTID, FACILITYID)
+###Preprocessing: Select common fields and, in our data, convert name to upper case and trim
+hifld.rl <- hifld.filter %>%
+  select(id, NAME, STATE) %>% ##note that this is an sf data set and has geometry associated with entries
+  mutate(NAME = str_replace_all(NAME, " & ", " AND ")) %>%
+  mutate(NAME = str_squish(str_replace_all(str_trim(NAME), "[^'[:^punct:]+]", " "))) %>%
+  mutate(NAME = str_replace_all(NAME, " AND ", " & "))
 
-#Create key entry
-wrc <- bind_cols(
- (All_States %>%
-  filter(NAME == "WISCONSIN RESOURCE CENTER") %>%
-  select(ID.PrisonAg)),wrc)
+All_States.rl <- All_States %>%
+  select(id, "Name of Correctional Facility", "state") %>%
+  mutate(`Name of Correctional Facility` = str_replace_all(`Name of Correctional Facility`, " & ", " AND ")) %>%
+  mutate(`Name of Correctional Facility` = str_squish(str_replace_all(str_trim(toupper(`Name of Correctional Facility`)), "[^'[:^punct:]+]", " "))) %>%
+  mutate(`Name of Correctional Facility` = str_replace_all(`Name of Correctional Facility`, " AND ", " & ")) %>%
+  rename(NAME = `Name of Correctional Facility`) %>%
+  rename(STATE = state)
 
-#Add WRC entry to key archive
-key <- bind_rows(key.archive, wrc)
+#Create pairs from linking two data sets with cutoff between 0 and 1
+a <- compare.linkage(hifld.rl, All_States.rl, blockfld = c("STATE"), strcmp=T, exclude="id")
+#print(head(a$pairs))
+b <- emWeights(a, cutoff = 0.95)
+#summary(b)
+#head(b)
+#allPairs <- getPairs(b)
+#head(allPairs)
+#write_csv(allPairs, path = "./writing/eda_output/allPairs.csv",
+#          append=FALSE)
+
+#Look at weights of pairs
+weights <- as.data.frame(b$Wdata)
+weights <- weights %>%
+  rename(Wdata = `b$Wdata`)
+#ggplot(weights, mapping=aes(Wdata)) +
+#  geom_histogram(binwidth = .01)
+#summary(weights$Wdata)
+table(weights$Wdata)
+
+#Retrieve the weight value that will serve as the upper threshold for Links (L)     
+upper <- max(weights$Wdata)
+
+#Set thresholds for predictions of Link (L), Possible (P), and Not a link (N)
+#Thresholds based on table weights, and iterative review of the Linkage.join data below
+c <- emClassify(b, threshold.lower = 0, threshold.upper = upper)
+#summary(c)
+linkage <- c$pairs
+linkage$weight <- c$Wdata
+linkage$links <- c$prediction
+linkage$id1 <- as.character(linkage$id1)
+linkage$id2 <- as.character(linkage$id2)
+
+rm(a, b, c)
+rm(weights)
+
+#Convert All_States_rl for join with final linkage results
+#Rename All_States_rl id column to id2 to join with final linkage results
+All_States.rl <- as.data.frame(All_States.rl)
+All_States.rl <- All_States.rl %>%
+  rename(id2 = id)
+
+#Rename All_States id column to id2 to join with final linkage results
+All_States.df <- as.data.frame(All_States)
+All_States.df <- All_States.df %>%
+  rename(id2 = id)
+
+#Rename HIFLD_rl id column to id1 for join with final linkage results
+hifld.rl <- hifld.rl %>%
+  rename(id1 = id)
+
+#Rename hifld.no_sf id column to id1 for join with final linkage results
+hifld.filter <- hifld.filter %>%
+  rename(id1 = id)
+
+#Results of HIFLD and All States rl subsets joined using linkage key
+linkage.join <- linkage %>%
+  left_join(hifld.rl, by = c("id1")) %>%
+  left_join(All_States.rl, by = c("id2"))
+
+#Same final results, including all columns from HIFLD and All States
+linkage.join_full <- linkage.join %>%
+  left_join(hifld.filter, by = c("id1")) %>%
+  left_join(All_States.df, by = c("id2"))
+
+rm(All_States.df)
+
+#Filtered for link (L) rows
+linkage.join_L <- linkage.join_full %>%
+   filter(links == "L")
+
+#Filtered for possible link (P) rows
+linkage.join_P <- linkage.join_full %>%
+  filter(links == "P") %>%
+  anti_join(linkage.join_L, by = "id1") %>%
+  anti_join(linkage.join_L, by = "id2")
+
+#Verify manually that all the links = P rows are actually links
+view(linkage.join_P)
+
+#Manually verified that all entries above are actually links; remove any that are not links
+linkage.join_P <- linkage.join_P %>%
+filter(!id1 == "175") %>% #Removing Clinton Correctional Facility Annex due to misjoin
+filter(!id1 == "581") #Removing Northeast Correctional Complex Annex due to misjoin
+
+#now joining with L rows
+linkage.join_LP <- bind_rows(linkage.join_L, linkage.join_P)
+
+#Examine the facilities that did not have matches
+linkage.join_N <- linkage.join_full %>%
+  filter(links == "N") %>%
+  anti_join(linkage.join_LP, by = "id1") %>%
+  anti_join(linkage.join_LP, by = "id2")
+
+#Examine the top match of facilities from All States data with linkage N    
+linkage.join_N_top_1 <- linkage.join_N %>%
+       group_by(id2) %>%
+       top_n(n = 1, wt = NAME.x)
+
+view(linkage.join_N_top_1)
+
+#Filter out non-matches
+linkage.join_N_matches <- linkage.join_N_top_1 %>%
+  filter(!NAME.x.x %in% c("CALIFORNIA SUBSTANCE ABUSE TREATMENT FACILITY & STATE PRISON CORCORAN SATF",
+                     "METRO REENTRY FACILITY",
+                     "ARRENDALE TRANSITIONAL CENTER",
+                     "NORTHWEST PROBATION RSAT",
+                     "ARRENDALE PROBATION RSAT",
+                     "SOUTHERN MAINE WOMEN'S REENTRY CENTER",
+                     "THREE LAKES VALLEY BOOT CAMP",
+                     "SCI PHOENIX",
+                     "WOMEN'S THERAPEUTIC RESIDENTIAL CENTER",
+                     "HOSPITAL GALVESTON",
+                     "JESTER III",
+                     "JESTER IV",
+                     "STATE FARM ENTERPRISE UNIT POWHATAN RECEPTION & CLASSIFICATION CENTER",
+                     "STATE FARM CORRECTIONAL CENTER",
+                     "STATE FARM WORK CENTER",
+                     "NORTHERN CORRECTIONAL FACILITY")) %>% #mis-matches
+  filter(!NAME.x.x %in% c("HUTCHINSON CORRECTIONAL FACILITY",
+                     "CENTRAL NEW MEXICO CORRECTIONAL FACILITY",
+                     "PENITENTIARY OF NEW MEXICO",
+                     "SOUTHERN NEW MEXICO CORRECTIONAL FACILITY")) #partial matches; there is 1:n relationship; will add back in below
   
+
+#The next three resulting datasets contains 1:2, and 1:3 and other matches that were originally not identified as matches (links = N), based upon manual review
+
+#Matches for facilities identified as having a 1:3 relationship with HIFLD data
+linkage.join_N_top_3 <- linkage.join_N %>%
+  group_by(id2) %>%
+  filter(NAME.x.x %in% c("HUTCHINSON CORRECTIONAL FACILITY",
+                         "PENITENTIARY OF NEW MEXICO" )) %>% #Hutchinson Correctional Facility (East, Central/Work Release, and South) and Penitentiary of New Mexico (Levels II, V, & VI)
+  top_n(n = 3, wt = NAME.x)
+
+#Matches for facilities identified as having a 1:2 relationship with HIFLD data
+linkage.join_N_top_2 <- linkage.join_N %>%
+  group_by(id2) %>%
+  filter(NAME.x.x %in% c("CENTRAL NEW MEXICO CORRECTIONAL FACILITY",  "SOUTHERN NEW MEXICO CORRECTIONAL FACILITY")) %>% #Central New Mexico Correctional Facility (Main/Level II and Level I) and Southern New Mexico Correctional Facility (Levels II & III)
+  top_n(n = 2, wt = NAME.x)
+
+#Match for a facility with a 2:1 relationship with HIFLD data
+linkage.join_extra <- linkage.join_full %>%
+  filter((NAME.x.x == "THREE LAKES VALLEY BOOT CAMP" & NAME.y.y == "THREE LAKES VALLEY CONSERVATION & BOOT CAMP") | #Three Lakes Valley Conservation & Three Lakes Valley Boot Camp
+        (NAME.x.x == "VALDOSTA STATE PRISON & ANNEX" & NAME.y == "VALDOSTA STATE PRISON")  | #Valdosta State Prison & VSP Annex
+        (NAME.x.x == "LEBANON CORRECTIONAL INSTITUTION" & NAME.y == "LEBANON CORRECTIONAL INSTITUTION CAMP") | #Lebanon Correctional Institution & LCI Camp 
+        (NAME.x.x == "NORTH CAROLINA CORRECTIONAL INSTITUTION FOR WOMEN" & NAME.y == "NORTH CAROLINA CORRECTIONAL INSTITUTION FOR WOMEN MINIMUM")   | #North Carolina Correctional Institution for Women & NCCI for Women Minimum
+        (NAME.x.x == "JULIA TUTWILER PRISON FOR WOMEN" & NAME.y == "JULIA TUTWILER PRISON FOR WOMEN ANNEX") | #Julia Tutwiler Prison for Women & JTP for Women Annex
+        (NAME.x.x == "INDIANA STATE PRISON" & NAME.y == "INDIANA STATE PRISON ISO") | #Indiana State Prison & ISP ISO
+        (NAME.x.x == "OHIO STATE PENITENTIARY" & NAME.y == "OHIO STATE PENITENTIARY CAMP")|  #Ohio State Penitentiary & OSP Camp
+        (NAME.x.x == "CALEDONIA CORRECTIONAL INSTITUTION" & NAME.y == "CALEDONIA CORRECTIONAL INSTITUTION MINIMUM")   | #Caledonia Correctional Institution & CCI Minimum
+        (NAME.x.x == "BAYSIDE STATE PRISON" & NAME.y == "BAYSIDE STATE PRISON FARM")  | #Bayside State Prison & BSP Farm (but not BSP - Ancora)
+        (NAME.x.x == "NORTHEAST CORRECTIONAL COMPLEX" & NAME.y == "NORTHEAST CORRECTIONAL COMPLEX WORK CAMP")  | #Northeast Correctional Complex & NCC Work Camp (in Vermont)
+        (NAME.x.x == "STATE FARM CORRECTIONAL CENTER" & NAME.y == "DEEP MEADOW CORRECTIONAL CENTER")  | #State Farm Correctional Center (same as Deep Meadow Correctional Center)
+        (NAME.x.x == "STATE FARM ENTERPRISE UNIT POWHATAN RECEPTION & CLASSIFICATION CENTER" & NAME.y == "POWHATAN RECEPTION CENTER")  | #State Farm Enterprise Unit / Powhowatan Reception and Classificaiton Center
+        (NAME.x.x == "STATE FARM WORK CENTER" & NAME.y == "JAMES RIVER WORK CENTER")  | #State Farm Work Center (same as James River Work Center)
+        (NAME.x.x == "HOSPITAL GALVESTON" & NAME.y == "TX DEPARTMENT OF CRIMINAL JUSTICE HOSPITAL GALVESTON")  | #Hospital Galveston
+        (NAME.x.x == "JESTER III" & NAME.y == "JESTER III UNIT TRUSTY CAMP")  | #Jester III
+        (NAME.x.x == "JESTER IV" & NAME.y == "JESTER IV PSYCHIATRIC FACILITY")  | #Jester IV
+        (NAME.x.x == "CALIFORNIA SUBSTANCE ABUSE TREATMENT FACILITY & STATE PRISON CORCORAN SATF" & NAME.y == "CA SUBSTANCE ABUSE TREATMENT FACILITY SATF")  #California Substance Abuse Treatment Facility
+          )
+
+#Combine results so far
+linkage.join_prelimresults <- 
+  bind_rows(linkage.join_LP, linkage.join_N_matches, linkage.join_N_top_3 , linkage.join_N_top_2, linkage.join_extra)
+
+#See how many unique entries from All States have multiple linked HIFLD entries
+linkage.join_multiple_hifld<- linkage.join_prelimresults %>%
+       group_by(id2, state, `Name of Correctional Facility`) %>%
+       summarise(count = n()) %>%
+      filter(count > 1)
+
+#See how many unique entries from HIFLD have multiple linked All States entries
+linkage.join_multiple_All_States <- linkage.join_prelimresults %>%
+  group_by(id1, state, NAME.y.y) %>%
+  summarise(count = n()) %>%
+  filter(count >1)
+
+#See which entries from All States are not in linked preliminary results
+All_States_no_HIFLD <- All_States %>%
+        rename(id2 = id) %>%
+        mutate(NAME.x.x = str_replace_all(`Name of Correctional Facility`, " & ", " AND ")) %>%
+        mutate(NAME.x.x = str_squish(str_replace_all(str_trim(toupper(NAME.x.x)), "[^'[:^punct:]+]", " "))) %>%
+        mutate(NAME.x.x = str_replace_all(NAME.x.x, " AND ", " & ")) %>%
+        anti_join(linkage.join_prelimresults, by = c("state", "Name of Correctional Facility"))
+
+#Check entries in prelim results that have multiple All States entries
+view(linkage.join_prelimresults %>%
+       filter(id1 %in% linkage.join_multiple_All_States$id1))
+
+#Check entries in prelim results that have multiple HIFLD entries
+view(linkage.join_prelimresults %>%
+       filter(id2 %in% linkage.join_multiple_hifld$id2))
+
+#Combine two above
+linkage.join_prelim_multi <- linkage.join_prelimresults %>%
+  filter(id1 %in% linkage.join_multiple_All_States$id1) %>%
+    bind_rows(linkage.join_prelimresults %>%
+                filter(id2 %in% linkage.join_multiple_hifld$id2))
+
+#Make any changes needed to prelim results (none needed) and save as final results
+linkage.join_finalresults <- linkage.join_prelimresults %>%
+  filter(!id1 %in% linkage.join_prelim_multi$id1 & !id2 %in% linkage.join_prelim_multi$id2) %>% #remove records with 1:n or n:1 linkage
+  bind_rows(All_States_no_HIFLD) %>% #Add rows from All States data not in HIFLD data
+  select(id1, id2, state, state_code, State, region, division, NAME.x, NAME.y, NAME.x.x, NAME.y.y, `Name of Correctional Facility`, 
+         `Confirmed Program`, Horticulture, Crops, `Animal Agriculture`, `Food Production`, `Culinary Arts and Food Service`, Other, 
+         `Stated Purpose of Activity`, ADDRESS, CITY, STATE.y.y, ZIP, ZIP4, TELEPHONE, TYPE, STATUS, POPULATION,
+         COUNTY, COUNTYFIPS, COUNTRY, NAICS_CODE, NAICS_DESC, SOURCE, SOURCEDATE, VAL_METHOD, VAL_DATE,
+         WEBSITE, SECURELVL, CAPACITY, Shape_Leng, SHAPE_Area, SHAPE_Length, geometry
+         ) %>%
+  rename(ID.HIFLD = id1, ID.PrisonAg = id2, NAME.match = NAME.x, NAME.HIFLD_cleaned = NAME.y,
+         NAME.PrisonAg_cleaned = NAME.x.x, NAME.HIFLD = NAME.y.y, NAME.PrisonAg = `Name of Correctional Facility`)
+
+#Format for analyses and record linkage with census data
+All_States_finalresults <- linkage.join_finalresults %>%
+         bind_rows(linkage.join_prelim_multi %>%
+                  distinct(id2, NAME.x.x, CITY, STATE.y.y, ZIP, TYPE, STATUS, COUNTY, COUNTYFIPS, COUNTRY, NAICS_CODE, NAICS_DESC,
+                  state, `Name of Correctional Facility`, `Confirmed Program`, Horticulture, Crops, `Animal Agriculture`, `Food Production`, `Culinary Arts and Food Service`, Other,
+                  `Stated Purpose of Activity`, state_code, State, region, division) %>%
+                  rename(ID.PrisonAg = id2, NAME.PrisonAg_cleaned = NAME.x.x, NAME.PrisonAg = `Name of Correctional Facility`)) %>%
+        rename(STATE = STATE.y.y)
+
 #Save file
-write_csv(key, path = "writing/eda_output_internal/PrisonAg_HIFLD_ID_key.csv", append=FALSE)
+saveRDS(All_States_finalresults, file = "writing/eda_output_internal/All_States_finalresults.Rds")
+
+All_States_finalresults <- readRDS(file = "writing/eda_output_internal/All_States_finalresults.Rds")
+
+#Create a key of Prison Ag IDs joined to HIFLD IDs for export for Geocentroid Team work:
+ID_key <- linkage.join_prelimresults %>%
+  select(id1, id2, FID, OBJECTID, FACILITYID) %>%
+  bind_rows(All_States_no_HIFLD %>%
+          select(id2)) %>%
+  rename(ID.PrisonAg = id2) %>%
+  select(-id1)
+
+#temp<- ID_key %>%
+#  distinct(ID.PrisonAg)
+
+write_csv(ID_key, path = "./writing/eda_output_internal/PrisonAg_HIFLD_ID_key.csv",
+                        append=FALSE)
 
 #Export All_States data for Prison Ag for Geocentroid Team Work
 All_States_export <-
   All_States %>%
-  rename(Name = `Name of Correctional Facility`, `Confirmed_Activities` = `Confirmed Program`) %>%
+  rename(ID.PrisonAg = id, Name = `Name of Correctional Facility`, `Confirmed_Activities` = `Confirmed Program`) %>%
   select(ID.PrisonAg, Name, State, state, state_code, region, division, `Confirmed_Activities`)
 
 write_csv(All_States_export, path = "./writing/eda_output_internal/PrisonAg.csv", append=FALSE)
@@ -234,73 +440,8 @@ rm(linkage, linkage.join, linkage.join_extra, linkage.join_L, linkage.join_LP, l
    linkage.join_multiple_All_States, linkage.join_multiple_hifld, upper, linkage.join_finalresults, linkage.join_prelim_multi,
    linkage.join_prelimresults, All_States_no_HIFLD)
 
-#Examine archive All_States_finalresults table that fully joins Prison Ag and HIFLD fields
-All_States_finalresults.archive <- readRDS(file = "writing/eda_output_internal/Archive/All_States_finalresults.Rds")
-
-#Remove old version (archive) of prison ag data
-All_States_finalresults.archive <- All_States_finalresults.archive %>%
-  select(-c(`Confirmed Program`, Horticulture, Crops, `Animal Agriculture`,
-            `Food Production`, `Culinary Arts and Food Service`, Other, `Stated Purpose of Activity`))
-
-#Remove old version (archive) of prison boundary HIFLD data
-All_States_finalresults.archive <- All_States_finalresults.archive %>%
-  select(-c(ADDRESS, CITY, STATE, ZIP, ZIP4, TELEPHONE, TYPE, STATUS, POPULATION, COUNTY, COUNTYFIPS,
-            COUNTRY, NAICS_CODE, NAICS_DESC, SOURCE, SOURCEDATE, VAL_METHOD, VAL_DATE,
-            WEBSITE, SECURELVL, CAPACITY, Shape_Leng, Shape_Area, Shape__Length, Shape__Area, geometry))
-
-#Join old version (archive) of remaining fileds to new All States data
-All_States <- All_States %>%
-  select(-NAME) %>%
-  left_join(All_States_finalresults.archive %>%
-              convert(num(ID.PrisonAg))) %>%
-  select(ID.HIFLD, ID.PrisonAg, state, state_code, State, region, division, everything()) %>%
-  convert(num(ID.HIFLD))
-
-wrc_2 <- All_States %>%
-  mutate(ID.HIFLD = case_when
-         (ID.PrisonAg == 998 ~ 735)) %>%
-  mutate(NAME.Prison_Ag = case_when
-         (ID.PrisonAg == 998 ~ "Wisconsin Resource Center")) %>%
-  mutate(NAME.PrisonAg_cleaned = case_when
-         (ID.PrisonAg == 998 ~ "WISCONSIN RESOURCE CENTER")) %>%
-  mutate(NAME.HIFLD = case_when
-         (ID.PrisonAg == 998 ~ "WISCONSIN RESOURCE CENTER")) %>%
-  mutate(NAME.HIFLD_cleaned = case_when
-         (ID.PrisonAg == 998 ~ "WISCONSIN REOURCE CENTER")) %>%
-  mutate(NAME.match = case_when
-         (ID.PrisonAg == 998 ~ 1)) %>%
-  filter(ID.PrisonAg == 998)
-
-#Replace Wisconsin Resource Center entry from All States with above data in wrc_2 
-All_States <- All_States %>%
-  filter(!ID.PrisonAg == 998) %>%
-  bind_rows(wrc_2)
-
-#Remove `Name of Correctional Facility` field (same as NAME.Prison_Ag)
-All_States <- All_States %>%
-  select(-`Name of Correctional Facility`)
-
-#Join with HIFLD fields to create new All_States_finalresults table
-All_States_finalresults <- All_States %>%
-  left_join(hifld.filter %>%
-            rename(ID.HIFLD = id) %>%
-              convert(num(ID.HIFLD)) %>%
-              select(ID.HIFLD, ADDRESS, CITY, STATE, ZIP, ZIP4, TELEPHONE, TYPE, STATUS, POPULATION, COUNTY, COUNTYFIPS,
-                     COUNTRY, NAICS_CODE, NAICS_DESC, SOURCE, SOURCEDATE, VAL_METHOD, VAL_DATE,
-                     WEBSITE, SECURELVL, CAPACITY, Shape_Leng, SHAPE_Length, SHAPE_Area, geometry)) %>%
-  select(ID.HIFLD, ID.PrisonAg, state, state_code, State, region, division, NAME.match, NAME.HIFLD_cleaned,
-         NAME.PrisonAg_cleaned, NAME.HIFLD, NAME.Prison_Ag, everything())
-
-rm(All_States_finalresults.archive, key.archive, wrc, wrc_2, All_States)
-
-#Save May 2020 data locally in project files
-saveRDS(All_States_finalresults, file = "data/raw_data/2020-05-26/All_States_finalresults.Rds")
-
-#Load May 2020 data
-All_States_finalresults <- readRDS(file = "data/raw_data/2020-05-26/All_States_finalresults.Rds")
-
 #Part II: Perform record linkage between HIFLD data and census data
-#Note: Original linkage in Archive EDA script. 
+#Note: This record linkage is incomplete as of February 13, 2020 - need to do future work to finalize linkages
 #(see: https://rpubs.com/ahmademad/RecordLinkage)
 
 #Load 2005 Prison Census Data
@@ -316,6 +457,216 @@ da24642.0001.filter <- da24642.0001 %>%
   separate(V12, into = c("ZIP", "ZIP4"), sep=5, remove = TRUE) %>%
   rename(NAME = V2, CITY = V10, STATE = V11) %>%
   rownames_to_column(var = "id")
+
+da24642.0001.rl <- da24642.0001.filter %>%
+  select(id, NAME, CITY, STATE, ZIP)
+
+saveRDS(da24642.0001.rl, "./writing/eda_output_internal/prison_census.Rds")
+da24642.0001.rl <- readRDS("./writing/eda_output_internal/prison_census.Rds")
+
+#Pre-processing: select all unique entries in All States data, with new id's added
+All_States.rl_census_lookup <- All_States_finalresults %>%
+    mutate(ZIP = as.character(ZIP)) %>%
+    select(ID.PrisonAg, NAME.PrisonAg_cleaned, CITY, state, ZIP) %>%
+    rename(NAME = NAME.PrisonAg_cleaned, STATE = state) %>%
+    rownames_to_column(var = "id")
+
+saveRDS(All_States.rl_census_lookup, file = "writing/eda_output_internal/All_States_rl_census_lookup.Rds")
+
+All_States.rl_census_lookup <- readRDS(file = "writing/eda_output_internal/All_States_rl_census_lookup.Rds")
+
+#Remove ID.PrisonAg from above data set to prepare for record linkage with census data
+All_States.rl_census <- All_States.rl_census_lookup %>%
+  select(-ID.PrisonAg)
+
+#Create pairs from linking two data sets with cutoff between 0 and 1
+d <- compare.linkage(da24642.0001.rl, All_States.rl_census, blockfld = c("STATE", "ZIP"), strcmp=T, exclude="id")
+print(head(d$pairs))
+e <- emWeights(d, cutoff = 0.95)
+#summary(b)
+#head(b)
+#allPairs <- getPairs(b)
+#head(allPairs)
+#write_csv(allPairs, path = "./writing/eda_output/allPairs.csv",
+#          append=FALSE)
+
+#Look at weights of pairs
+weights <- as.data.frame(e$Wdata)
+weights <- weights %>%
+  rename(Wdata = `e$Wdata`)
+#ggplot(weights, mapping=aes(Wdata)) +
+#  geom_histogram(binwidth = .01)
+#summary(weights$Wdata)
+table(weights$Wdata)
+
+#Retrieve the weight value that will serve as the upper threshold for Links (L)     
+upper <- max(weights$Wdata)
+
+#Set thresholds for predictions of Link (L), Possible (P), and Not a link (N)
+#Thresholds based on table weights, and iterative review of the Linkage.join data below
+f <- emClassify(e, threshold.lower = 0, threshold.upper = upper)
+#summary(c)
+linkage.census <- f$pairs
+linkage.census$weight <- f$Wdata
+linkage.census$links <- f$prediction
+linkage.census$id1 <- as.character(linkage.census$id1)
+linkage.census$id2 <- as.character(linkage.census$id2)
+
+rm(d, e, f)
+rm(weights)
+
+#Rename census id column to id1 for join with final linkage results
+da24642.0001.rl <- da24642.0001.rl %>%
+  rename(id1 = id)
+
+#Rename final results rl id column to id2 for join with final linkage results
+All_States.rl_census_lookup <- All_States.rl_census_lookup %>%
+  rename(id2 = id)
+
+#Rename census results id column to id1 for join with final linkage results
+da24642.0001.filter <- da24642.0001.filter %>%
+  rename(id1 = id)
+
+#Creating two sets of linkage.census.join data sets (all columns and subset of columns) for ease of viewing
+#Results of census and prelim results rl subsets joined using linkage key
+linkage.census.join <- linkage.census %>%
+  left_join(da24642.0001.rl, by = c("id1")) %>%
+  left_join(All_States.rl_census_lookup, by = c("id2"))
+
+#Results of census linkage including all columns from census and previous linkage prelim results
+linkage.census.join_full <- linkage.census.join %>%
+  left_join(da24642.0001.filter, by = c("id1")) %>%
+  left_join(All_States_finalresults, by = c("ID.PrisonAg"))
+
+#Filtered for link (L) rows (all columns)
+linkage.census.join_full_L <- linkage.census.join_full %>%
+  filter(links == "L")
+
+#Filtered for link (L) rows (subset of columns)
+linkage.census.join_L <- linkage.census.join %>%
+  filter(links == "L")
+
+#Filtered for possible link (P) rows (all columns)
+linkage.census.join_full_P <- linkage.census.join_full %>%
+  filter(links == "P") %>%
+  anti_join(linkage.census.join_L, by = "id1") %>%
+  anti_join(linkage.census.join_L, by = "id2")
+
+#Filtered for possible link (P) rows (subset of columns)
+linkage.census.join_P <- linkage.census.join %>%
+  filter(links == "P") %>%
+  anti_join(linkage.census.join_L, by = "id1") %>%
+  anti_join(linkage.census.join_L, by = "id2")
+
+#Verify manually that all the links = P rows are actually links
+view(linkage.census.join_full_P)
+
+#Remove non-links
+linkage.census.join_P <- linkage.census.join_P %>%
+  filter(!(id1 == "213" & id2 == "152")) #Removing Taylor Correctional Institution & Annex - has 1:2 match with HIFLD data; Main facility not in All States data, annex only
+
+#Remove non-links
+linkage.census.join_full_P <- linkage.census.join_full_P %>%
+  filter(!(id1 == "213" & id2 == "152")) #Removing Taylor Correctional Institution & Annex - has 1:2 match with HIFLD data; Main facility not in All States data, annex only
+
+#now joining with L rows (all columns)
+linkage.census.join_full_LP <- bind_rows(linkage.census.join_full_L, linkage.census.join_full_P)
+
+#now joining with L rows (subset of columns)
+linkage.census.join_LP <- bind_rows(linkage.census.join_L, linkage.census.join_P)
+
+#removing duplicate error in 2005 prison census data for Johnson State Prison in Wrightsville, Georgia
+linkage.census.join_LP <- linkage.census.join_LP %>%
+  filter(!id1 == "295")
+
+linkage.census.join_full_LP <- linkage.census.join_full_LP %>%
+  filter(!id1 == "295")
+
+saveRDS(linkage.census.join_full_LP, file="writing/eda_output_internal/linkage_census_join_full_LP.Rds")
+saveRDS(linkage.census.join_LP, file="writing/eda_output_internal/linkage_census_join_LP.Rds")
+
+linkage.census.join_full_LP <- readRDS(file="writing/eda_output_internal/linkage_census_join_full_LP.Rds")
+linkage.census.join_LP <- readRDS(file="writing/eda_output_internal/linkage_census_join_LP.Rds")
+
+rm(linkage.census, linkage.census.join, linkage.census.join_full, linkage.census.join_full_L, linkage.census.join_full_P,
+   linkage.census.join_L, linkage.census.join_P, upper, All_States.rl, All_States.rl_census)
+
+#Examine rows from All States that are not linked (L or P) with census data
+write_csv(All_States %>%
+       rename(ID.PrisonAg = id) %>%
+       left_join(All_States.rl_census_lookup %>%
+                 select(id2, ID.PrisonAg), by = "ID.PrisonAg") %>%
+       anti_join(linkage.census.join_LP, by = "id2") %>%
+     select(ID.PrisonAg, state, `Name of Correctional Facility`),
+     "./writing/eda_output_internal/All_States_not_linked_with_census.csv",
+     append=FALSE)
+
+#Upload manually generated key - a list of All_States_not_linked_with_census.csv matched with their respective records from prison_census.csv
+#Note that this data set will contain duplicates of ID entries because of 1:n and n:1 matches
+All_States_Matching_to_Prison_Census <- read_csv("writing/eda_output/All_States_Matching_to_Prison_Census.csv")
+View(All_States_Matching_to_Prison_Census)
+
+#Drop records from All States that did not have matches (id1 is NA)
+All_States_Matching_to_Prison_Census <- All_States_Matching_to_Prison_Census %>%
+  drop_na(id1)
+
+#Drop all of the records from All States where a facility matches to more than one census entry
+All_States_Matching_to_Prison_Census_remove_dupl <-
+  All_States_Matching_to_Prison_Census %>%
+    anti_join((All_States_Matching_to_Prison_Census %>%
+                 group_by(ID.PrisonAg) %>%
+                 summarise(count = n()) %>%
+                 filter(count > 1)), by = "ID.PrisonAg")
+
+#Simplify linkage.census.join_full_LP to only needed fields
+linkage.census.LP_cleaned <- linkage.census.join_full_LP %>%
+  select(-c(NAME.x, CITY.x, STATE.x, ZIP.x, is_match, weight, links, NAME.y, CITY.y, STATE.y, ZIP.y, NAME.x.x, CITY.x.x, STATE.x.x, ZIP.x.x)) %>%
+  rename(ID.Census = id1, ID.Join_to_Census = id2, NAME.Census = NAME.y.y, CITY.Census = CITY.y.y, STATE.Census = STATE.y.y, ZIP.Census = ZIP.y.y, ZIP4.Census = ZIP4.x, ZIP4 = ZIP4.y)
+
+#Turn IDs into character
+All_States_Matching_to_Prison_Census_remove_dupl$id1 <- as.character(All_States_Matching_to_Prison_Census_remove_dupl$id1)
+All_States_Matching_to_Prison_Census_remove_dupl$ID.PrisonAg <- as.character(All_States_Matching_to_Prison_Census_remove_dupl$ID.PrisonAg)
+
+#Join manually matched fields to filtered census data
+All_States_Matching_to_Prison_Census_remove_dupl <- All_States_Matching_to_Prison_Census_remove_dupl %>%
+  left_join(da24642.0001.filter , by = c("id1")) %>%
+  select(-c(NAME.x, CITY.x, STATE.x, ZIP.x)) %>%
+  rename(NAME.Census = NAME.y, CITY.Census = CITY.y, STATE.Census = STATE.y, ZIP.Census = ZIP.y, ZIP4.Census = ZIP4)
+
+#Link back to All_States_final results
+All_States_HIFLD_Census <-  All_States_finalresults %>%
+  left_join((All_States.rl_census_lookup %>%
+              select(id2, ID.PrisonAg)), by = "ID.PrisonAg") %>%
+  left_join(All_States_Matching_to_Prison_Census_remove_dupl, by = c("state","ID.PrisonAg")) %>%
+  drop_na(id1) %>%
+  rename(ID.Census = id1, ID.Join_to_Census = id2) %>%
+  select(-`Name of Correctional Facility`)
+
+All_States_HIFLD_Census <- All_States_HIFLD_Census %>%
+  rename(NAME.PrisonAg = NAME.Prison_Ag)
+
+linkage.census.LP_cleaned <- linkage.census.LP_cleaned %>%
+  rename(NAME.PrisonAg = NAME.Prison_Ag)
+
+#Bind All_States_HIFLD_census to include the linkage.census.LP_cleaned facilities
+#This dataset is the final one using for demographic analysis of census data
+All_States_HIFLD_Census <- bind_rows(All_States_HIFLD_Census, linkage.census.LP_cleaned)
+
+saveRDS(All_States_HIFLD_Census, file = "writing/eda_output_internal/All_States_HIFLD_census.Rds")
+All_States_HIFLD_Census <- readRDS("writing/eda_output_internal/All_States_HIFLD_census.Rds")
+
+write_csv((All_States_HIFLD_Census %>%
+            select(ID.PrisonAg, ID.HIFLD, ID.Join_to_Census, ID.Census, 
+                   state:division, NAME.PrisonAg, NAME.PrisonAg_cleaned,
+                   `Confirmed Program`, Horticulture:`Stated Purpose of Activity`,
+                   NAME.HIFLD, NAME.HIFLD_cleaned,
+                   ADDRESS:CAPACITY,
+                   V1:V235
+                   ))
+            , "./writing/eda_output_internal/All_States_HIFLD_Census.csv",
+append=FALSE)
+
+All_States_HIFLD_Census <- read_csv("./writing/eda_output/All_States_HIFLD_Census.csv")
 
 ########Analysis of All_States, HIFLD, and Census Data########
 

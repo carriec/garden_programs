@@ -38,7 +38,12 @@ drive_download(
   path = "./data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Carrie_States.xlsx",
   overwrite = TRUE)
 
-#No longer importing Azmal's spreadsheets: all facilities in it covered by Carrie's and Becca's spreadsheet
+#Import Azmal's spreadsheets
+azmal <- drive_get(as_id("https://docs.google.com/spreadsheets/d/1zUfdX4gqw76B4t0rv2x_696GzVuBQbI1"))
+drive_download(
+  file = as_id("https://docs.google.com/spreadsheets/d/1zUfdX4gqw76B4t0rv2x_696GzVuBQbI1"),
+  path = "./data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Azmal_States_SUMMER.xlsx",
+  overwrite = TRUE)
 
 #Import Evan's spreadsheets
 evan <- drive_get(as_id("https://docs.google.com/spreadsheets/d/1CsM5fbXbmm09f9GPhrTPW7NoCCQIlE2B"))
@@ -47,7 +52,7 @@ drive_download(
   path = "./data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Evan_States_SUMMER.xlsx",
   overwrite = TRUE)
 
-rm(addy, becca, carrie, evan, josh)
+rm(addy, becca, carrie, azmal, evan, josh)
 
 ###########ARCHIVE: February 16, 2020 Import###########
 
