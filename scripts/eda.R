@@ -319,78 +319,82 @@ da24642.0001.filter <- da24642.0001 %>%
 
 ########Analysis of All_States, HIFLD, and Census Data########
 
+#Rename Confirmed Program to Confirmed Activities
+All_States_finalresults <- All_States_finalresults %>%
+  rename(`Confirmed Activities` = `Confirmed Program`)
+
 #What? Counts of activities at state correctional facilities
 
-#Total number of facilities by state with Confirmed (Yes=1/No=0) and Unconfirmed (NA) programs
-view(All_States_finalresults %>%
-       group_by(State, region, division, `Confirmed Program`) %>%
-       summarise(facilities_tot = n()))
-
+#Total number of facilities by state with Confirmed (Yes=1/No=0) and Unconfirmed (NA) activities
+All_States_finalresults %>%
+       group_by(State, region, division, `Confirmed Actvities`) %>%
+       summarise(facilities_tot = n())
+      
 #Write to CSV file
 write_csv(All_States_finalresults %>%
-            group_by(State, region, division, `Confirmed Program`) %>%
+            group_by(State, region, division, `Confirmed Activities`) %>%
             summarise(facilities_tot = n()),
           "./writing/eda_output/facilities_tot_state.csv",
           append=FALSE)
 
-#List of correctional facilities with Confirmed Yes (Yes=1) Programs, excluding Culinary Arts and Food Service
+#List of correctional facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service
 All_States_confirmed_ag <-
   All_States_finalresults %>%
   select(-`Culinary Arts and Food Service`) %>%
-  filter(`Confirmed Program`==1 & 
+  filter(`Confirmed Activities`==1 & 
            (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))
   )
 
-#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Programs, excluding Culinary Arts and Food Service
-view(All_States_finalresults %>%
+#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service
+All_States_finalresults %>%
        select(-`Culinary Arts and Food Service`) %>%
-       filter(`Confirmed Program`==1 & 
+       filter(`Confirmed Activities`==1 & 
                 (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
-       summarise(facilities_confirmed_ag=n()))
+       summarise(facilities_confirmed_ag=n())
 
-#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Programs, including Culinary Arts and Food Service
-view(All_States_finalresults %>%
-       filter(`Confirmed Program`==1 & 
+#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Activities, including Culinary Arts and Food Service
+All_States_finalresults %>%
+       filter(`Confirmed Activities`==1 & 
                 (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(`Culinary Arts and Food Service`) | !is.na(Other))) %>%
-       summarise(facilities_confirmed_ag=n()))
+       summarise(facilities_confirmed_ag=n())
 
 #View sums for all states for facilities with confirmed/unconfirmed/confirmed no that have non-null category columns, excluding Culinary Arts and Food Service
-view(All_States_finalresults %>%
+All_States_finalresults %>%
        select(-`Culinary Arts and Food Service`) %>%
        filter(
                 (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
-       group_by(`Confirmed Program`, state) %>%
-       summarise(facilities_confirmed_ag=n()))
+       group_by(`Confirmed Activities`, state) %>%
+       summarise(facilities_confirmed_ag=n())
 
 #Confirmed facilities with just crop and/or animal agriculture
 view(All_States_finalresults %>%
        select(-`Culinary Arts and Food Service`) %>%
-       filter(`Confirmed Program`==1 & 
+       filter(`Confirmed Activities`==1 & 
                 (!is.na(Crops) | !is.na(`Animal Agriculture`))) %>%
        summarise(facilities_confirmed_ag=n()))
 
 view(All_States_finalresults %>%
-       filter(`Confirmed Program`==1 & 
+       filter(`Confirmed Activities`==1 & 
                 (!is.na(Crops) | !is.na(`Animal Agriculture`))) %>%
        group_by(region) %>%
        summarise(count = n()))
 
-#Count by state Above List of Facilities with Confirmed Yes (Yes=1) Programs, excluding Culinary Arts and Food Service
+#Count by state Above List of Facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service
 All_States_Confirmed_Ag_count <- All_States_finalresults %>%
        select(-`Culinary Arts and Food Service`) %>%
-       filter(`Confirmed Program`==1 & 
+       filter(`Confirmed Activities`==1 & 
                 (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
        group_by(region, division, State, state) %>%
        summarise(facilities_confirmed_ag=n())
 
-#Count by state Above List of Facilities with Confirmed Yes (Yes=1) Programs, including Culinary Arts and Food Service
+#Count by state Above List of Facilities with Confirmed Yes (Yes=1) Activities, including Culinary Arts and Food Service
 All_States_Confirmed_Ag_count_ca <- All_States_finalresults %>%
-  filter(`Confirmed Program`==1 & 
+  filter(`Confirmed Activities`==1 & 
            (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(`Culinary Arts and Food Service`) | !is.na(Other))) %>%
   group_by(region, division, State, state) %>%
   summarise(facilities_confirmed_ag=n())
 
-#a)Sum for States of All Correctional Facilities in Our Data Set; b) Sum of Prisons with Confirmed (Yes=1) Programs, excluding Culinary Arts and Food Service, c) and Calculated as a Percentage (b/a)
+#a)Sum for States of All Correctional Facilities in Our Data Set; b) Sum of Prisons with Confirmed (Yes=1) Activities, excluding Culinary Arts and Food Service, c) and Calculated as a Percentage (b/a)
 All_States_confirmed_ag.count.pct <- All_States_finalresults %>%
   group_by(State, state, region, division) %>%
   summarise(facilities_tot = n()) %>% #all facilities surveyed in each state
@@ -419,18 +423,53 @@ write_csv(All_States_confirmed_ag.count.ca.pct,
 #List of Correctional Faciltiies + program activity categories and subcategories for Confirmed Programs excluding culinary arts (Yes=1)
 All_States_pivot <-
   All_States_finalresults %>%
+  replace_with_na(replace = list(Other = c("Sagebrush in Prisons Program"))) %>%
   select(-`Culinary Arts and Food Service`) %>%
-  filter(`Confirmed Program`==1) %>%
-  pivot_longer(cols = c(`Horticulture`,`Crops`,`Animal Agriculture`,`Food Production`,`Other`) , names_to = "Program Category", values_to = "Subcategory") %>%
+  filter(`Confirmed Activities`==1) %>%
+  pivot_longer(cols = c(`Horticulture`,`Crops`,`Animal Agriculture`,`Food Production`,`Other`) , names_to = "Activity Category", values_to = "Subcategory") %>%
   drop_na(Subcategory) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture programl ", "Horticulture program;")) 
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Horticultural class", "Horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture programl ", "Horticulture;")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture program", "Horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Unspecified horticulture program", "Unspecified horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture Program", "Horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture", "Horticulture Program")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Horses", "Equine")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Master gardener program", "Master Gardener Class")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other Pesticide applicator", "Pesticide Applicator")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other;Pesticide applicator", "Pesticide Applicator")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Pesticide applicator", "Pesticide Applicator")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Aquaponics", "Aquaponics")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Butterfly hatchery", "Butterfly Hatchery")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Eggs", "Eggs")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Flower sales", "Flower Sales")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Honey production", "Honey Production")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Horticultural therapy", "Horticultural Therapy")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: House plants", "House Plants")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Hydroponics", "Hydroponics")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Juice Production", "Juice Production")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Mealpacking and donation", "Mealpacking and Donation")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Plant Science", "Plant Science")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Spice Production", "Spice Production")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Sagebrush cultivation", "Sagebrush Cultivation")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Seafood handling", "Seafood Handling")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: State Central Kitchen", "State Central Kitchen")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Vegetable and flower starters", "Vegetable and Flower Starters")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Other: Pesticide management", "Pesticide Management")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Pollinator garden", "Pollinator Habitat")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Pollinator Garden", "Pollinator Habitat")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Pollinator Gardens", "Pollinator Habitat")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Pollinator habitat", "Pollinator Habitat")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Pest Management", "Pesticide Management")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Composting\n", "Composting")) %>%
+  mutate(Subcategory = trimws(Subcategory, which = "both"))
 
 #Number of correctional facilities by state with confirmed (Yes=1) activities within a category, excluding Culinary Arts and Food Service
 #Plus each facility within a given category as a percent of all facilities in that state that offer ag actvities
 #Plus each facility within a given category as a percent of all facilities in a state in our dataset
 All_States_cat <-
   All_States_pivot %>%
-  group_by(State, state, region, division, `Confirmed Program`,`Program Category`) %>%
+  group_by(State, state, region, division, `Confirmed Activities`,`Activity Category`) %>%
   summarise(cat_tot = n()) %>% #number of facilities in a state with confirmed activity in a given category
   left_join(All_States_Confirmed_Ag_count, by = c("State", "state", "region", "division")) %>%
   mutate(pct_of_facilities_confirmed_ag = cat_tot/facilities_confirmed_ag) %>% #percentage of confirmed ag facilities with a given activity
@@ -442,24 +481,10 @@ All_States_cat <-
 #Write to CSV
 write_csv(All_States_cat, "./writing/eda_output/facilities_tot_confirmed_ag_state_category.csv", append=FALSE)
 
-#Number of correctional facilities by state with confirmed (Yes=1) activities within a category, including Culinary Arts and Food Service
-#Plus each facility within a given category as a percent of all facilities in that state that offer ag actvities
-#Plus each facility within a given category as a percent of all facilities in a state in our dataset
-All_States_cat_ca <-
-  All_States_pivot_ca %>%
-  group_by(State, state, region, division, `Confirmed Program`,`Program Category`) %>%
-  summarise(cat_tot = n()) %>% #number of facilities in a state with confirmed activity in a given category
-  left_join(All_States_Confirmed_Ag_count_ca, by = c("State", "state", "region", "division")) %>%
-  mutate(pct_of_facilities_confirmed_ag = cat_tot/facilities_confirmed_ag) %>% #percentage of confirmed ag facilities with a given activity
-  left_join((All_States_finalresults %>%
-               group_by(State, state, region, division) %>%
-               summarise(facilities_tot = n())), by = c("State", "state", "region", "division")) %>%
-  mutate(pct_of_facilities_tot = cat_tot/facilities_tot)
-
 #Number of correctional facilities by division with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
 All_Divisions_count <-
   All_States_pivot %>%
-  group_by(region, division, `Confirmed Program`,`Program Category`) %>%
+  group_by(region, division, `Confirmed Activities`,`Activity Category`) %>%
   summarise(facilities_confirmed_ag = n())
 
 #Write to CSV
@@ -467,7 +492,7 @@ write_csv(All_Divisions_count,
           "./writing/eda_output/prisons_tot_confirmed_ag_division_category.csv",
           append=FALSE)
 
-#Sum for States of All Prisons Surveyed and Sum of Prisons with Confirmed (Yes=1) Programs, excluding Culinary Arts and Food Service, and Percentage of Confirmed
+#Sum for States of All Prisons Surveyed and Sum of Prisons with Confirmed (Yes=1) activities, excluding Culinary Arts and Food Service, and Percentage of Confirmed
 All_Divisions_Confirmed_Ag_pct <- All_States_finalresults %>%
   group_by(region, division) %>%
   summarise(all_prisons = n()) %>%
@@ -486,7 +511,7 @@ write_csv(All_Divisions_Confirmed_Ag_pct,
 #Number of prisons by region with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
 All_Regions_count <-
   All_States_pivot %>%
-  group_by(region, `Confirmed Program`,`Program Category`) %>%
+  group_by(region, `Confirmed Activities`,`Activity Category`) %>%
   summarise(facilities_confirmed_ag = n())
 
 #Write to CSV
@@ -494,7 +519,7 @@ write_csv(All_Regions_count,
           "./writing/eda_output/prisons_tot_confirmed_ag_region_category.csv",
           append=FALSE)
 
-#Sum for States of All Prisons Surveyed and Sum of Prisons with Confirmed (Yes=1) Programs, excluding Culinary Arts and Food Service, and Percentage of Confirmed
+#Sum for States of All Prisons Surveyed and Sum of Prisons with Confirmed (Yes=1) activities, excluding Culinary Arts and Food Service, and Percentage of Confirmed
 All_Regions_Confirmed_Ag_pct <- All_States_finalresults %>%
   group_by(region) %>%
   summarise(all_prisons = n()) %>%
@@ -513,7 +538,7 @@ write_csv(All_Regions_Confirmed_Ag_pct,
 #Number of prisons in US with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
 All_US_count <-
   All_States_pivot %>%
-  group_by(`Confirmed Program`,`Program Category`) %>%
+  group_by(`Confirmed Activities`,`Activity Category`) %>%
   summarise(facilities_confirmed_ag = n())
 
 #Write to CSV
@@ -546,13 +571,27 @@ All_States_subcat_pivot <-
   select(-`Stated Purpose of Activity`) %>%
   pivot_longer(cols=c(paste("Sub",1:max_col, sep = "_")), names_to = "Temp", values_to = "Subcategory") %>%
   select(-Temp) %>%
-  drop_na("Subcategory")
+  drop_na("Subcategory")%>%
+  mutate(Subcategory = str_to_title(Subcategory)) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, " And ", " and ")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, " Or ", " or ")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, " And ", " and "))
+
+###Create export version
+All_States_subcat_pivot_export <-
+  All_States_subcat_pivot %>%
+  select(ID.PrisonAg, `Confirmed Activities`, `Activity Category`, Subcategory) %>%
+  rename(Confirmed_Activities = `Confirmed Activities`, Activity_Category = `Activity Category`, Activity_Subcategory = `Subcategory`)
+
+#Export
+write_csv(All_States_subcat_pivot_export,
+          "./writing/eda_output_internal/PrisonAg_Activities_no_ca.csv",
+          append=FALSE)
 
 #Number of prisons by state with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
 All_States_subcat_count <-
   All_States_subcat_pivot %>%
-  mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
-  group_by(state, region, `Confirmed Program`,`Program Category`, Subcategory) %>%
+  group_by(state, region, `Confirmed Activities`,`Activity Category`, Subcategory) %>%
   summarise(confirmed_ag_prisons = n())
 
 #Write to CSV
@@ -561,14 +600,18 @@ write_csv( All_States_subcat_count,
            append=FALSE)
 
 view(All_States_subcat_count %>%
-  group_by(`Program Category`, Subcategory) %>%
+  group_by(`Activity Category`, Subcategory) %>%
     summarise(count = n()))
+
+All_States_subcat_count %>%
+  group_by(`Activity Category`, Subcategory) %>%
+  summarise(count = n())
 
 #Number of prisons by division with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
 All_Divisions_subcat_count <-
   All_States_subcat_pivot %>%
   mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
-  group_by(region, division, `Confirmed Program`,`Program Category`, Subcategory) %>%
+  group_by(region, division, `Confirmed Activities`,`Activity Category`, Subcategory) %>%
   summarise(facilities_confirmed_ag = n())
 
 #Write to CSV
@@ -580,7 +623,7 @@ write_csv(All_Divisions_subcat_count,
 All_Regions_subcat_count <-
   All_States_subcat_pivot %>%
   mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
-  group_by(region, `Confirmed Program`,`Program Category`, Subcategory) %>%
+  group_by(region, `Confirmed Activities`,`Activity Category`, Subcategory) %>%
   summarise(facilities_confirmed_ag = n())
 
 #Write to CSV
@@ -592,7 +635,7 @@ write_csv(All_Regions_subcat_count,
 All_US_subcat_count <-
   All_States_subcat_pivot %>%
   mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
-  group_by(`Program Category`, Subcategory) %>%
+  group_by(`Activity Category`, Subcategory) %>%
   summarise(facilities_confirmed_ag = n()) %>%
   arrange(desc(facilities_confirmed_ag))
 
@@ -665,12 +708,12 @@ ggsave("map_pct_prisons_conf_ag.png", plot = last_plot(), device="png", path = "
 gg_all_cat <- gg +
   geom_map(data=
              (All_States_cat %>%
-                filter(!`Program Category` == "Other"))
+                filter(!`Activity Category` == "Other"))
               , map=us_map,
            aes(fill=facilities_confirmed_ag, map_id=State),
            color="white", size=0.1) +
   ggtitle("States with Confirmed Ag Activities") +
-  facet_wrap( ~ `Program Category`) +
+  facet_wrap( ~ `Activity Category`) +
   coord_proj(us_laea_proj) +
   scale_fill_viridis(name="Facilities") +
   theme(legend.position="right")+
@@ -681,12 +724,12 @@ ggsave("map_prisons_confirmed_ag_cat.png", plot = last_plot(), device="png", pat
 #Map of the percentage of prisons within a state in our dataset that have confirmed ag activities by category
 gg_all_cat_pct <- gg +
   geom_map(data=(All_States_cat %>%
-                   filter(!`Program Category` == "Other")),
+                   filter(!`Activity Category` == "Other")),
            map=us_map,
            aes(fill=pct_of_facilities_tot, map_id=State),
            color="white", size=0.1) +
   ggtitle("Percent of State Correctional Facilities with Ag by Activity Type") +
-  facet_wrap( ~ `Program Category`) +
+  facet_wrap( ~ `Activity Category`) +
   coord_proj(us_laea_proj) +
   scale_fill_viridis(name="Percent", labels=scales::percent) +
   theme(legend.position="right")
@@ -696,7 +739,7 @@ ggsave("map_pct_prisons_conf_ag_cat.png", plot = last_plot(), device="png", path
 #Prisons with Horticulture Activities by State
 All_States_count_hort <-
   All_States_count %>%
-  filter(`Program Category`== "Horticulture")
+  filter(`Activity Category`== "Horticulture")
 
 #Map of prisons with Horticulture Activities
 gg_hort <- gg + 
@@ -730,7 +773,7 @@ ggsave("map_pct_prisons_conf_hort.png", plot = last_plot(), device="png", path =
 #Prisons with Crops and Silviculture by State
 All_States_count_crops <-
   All_States_count %>%
-  filter(`Program Category`== "Crops")
+  filter(`Activity Category`== "Crops")
 
 #Map of Prisons with Crops and Silviculture
 gg_crops <- gg + 
@@ -764,7 +807,7 @@ ggsave("map_pct_prisons_conf_crops.png", plot = last_plot(), device="png", path 
 #Prisons with Animal Ag by State
 All_States_count_animals <-
   All_States_count %>%
-  filter(`Program Category`== "Animal Agriculture")
+  filter(`Activity Category`== "Animal Agriculture")
 
 #Map of Prisons with Animal Ag
 gg_animals <- gg + 
@@ -798,7 +841,7 @@ ggsave("map_pct_prisons_conf_animals.png", plot = last_plot(), device="png", pat
 #Prisons with Food Production & Processing by State
 All_States_count_food <-
   All_States_count %>%
-  filter(`Program Category`== "Food Production")
+  filter(`Activity Category`== "Food Production")
 
 #Map of Prisons with Food Production & Processing by State
 gg_food <- gg + 
@@ -841,21 +884,21 @@ manualviridis4 <- c("#31688EFF", "#FDE725FF", "#440154FF", "#35B779FF")
 
 #Plot program categories broken down by region
 region1 <- ggplot(data=All_Regions_count, aes(x=region, y=facilities_confirmed_ag)) +
-  geom_col(aes(fill=`Program Category`)) + 
+  geom_col(aes(fill=`Activity Category`)) + 
   labs(y = "Number of Correctional Facilities", x = "Region", title = "Facilities with Ag Activities by Region")
 
 ggsave("plot_ag_region1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Plot program categories broken down by division
 division1 <- ggplot(data=All_Divisions_count, aes(x=division, y=facilities_confirmed_ag)) +
-  geom_col(aes(fill=`Program Category`)) + 
+  geom_col(aes(fill=`Activity Category`)) + 
   labs(y = "Number of Correctional Facilities", x = "Division", title = "Facilities with Ag Activities by Regional Division") +
   coord_flip()
 
 ggsave("plot_ag_division1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Plot regions broken down by program categories
-region2 <- ggplot(data=All_Regions_count, aes(x=`Program Category`, y=facilities_confirmed_ag)) +
+region2 <- ggplot(data=All_Regions_count, aes(x=`Activity Category`, y=facilities_confirmed_ag)) +
   geom_col(aes(fill=`region`)) +
   scale_fill_manual(values = manualviridis4) +
   labs(y= "Number of Correctional Facilities", x = "Activity Type", fill = "Region", title = "State Correctional Facilities with Ag by Activity Type and Region")
@@ -863,7 +906,7 @@ region2 <- ggplot(data=All_Regions_count, aes(x=`Program Category`, y=facilities
 ggsave("plot_ag_region2.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Plot divisions broken down by program categories
-division2 <- ggplot(data=All_Divisions_count, aes(x=`Program Category`, y=facilities_confirmed_ag)) +
+division2 <- ggplot(data=All_Divisions_count, aes(x=`Activity Category`, y=facilities_confirmed_ag)) +
   geom_col(aes(fill=`division`)) +
   labs(y= "Number of Correctional Facilities", x = "Activity Type", fill = "Division", title = "Correctional Facilities with Ag Activities")
 
@@ -877,11 +920,11 @@ All_Regions_pct_category <- All_Regions_count %>%
   mutate(pct = confirmed_ag_prisons/all_prisons)
 
 #Plot
-region3 <- ggplot(All_Regions_pct_category, aes(x = `Program Category`, y = pct, group = region)) +  
+region3 <- ggplot(All_Regions_pct_category, aes(x = `Activity Category`, y = pct, group = region)) +  
   geom_path(aes(color = region), alpha = 1 , size = 2,
             lineend = 'round', linejoin = 'round') +
   scale_y_continuous(labels=scales::percent) +
-  labs(y= "Percentage of Prisons per Region with Confirmed Programs", x = "Program Category", fill = "Region", title = "Percentage of Prisons per Region with Confirmed Ag Programs")
+  labs(y= "Percentage of Prisons per Region with Confirmed Activities", x = "Activity Category", fill = "Region", title = "Percentage of Prisons per Region with Confirmed Ag Activities")
 
 ggsave("plot_ag_region3.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
@@ -893,11 +936,11 @@ All_Divisions_pct_category <- All_Divisions_count %>%
   mutate(pct = confirmed_ag_prisons/all_prisons)
 
 #Plot
-division3 <- ggplot(All_Divisions_pct_category, aes(x = `Program Category`, y = pct, group = division)) +  
+division3 <- ggplot(All_Divisions_pct_category, aes(x = `Activity Category`, y = pct, group = division)) +  
   geom_path(aes(color = division), alpha = 1 , size = 2,
             lineend = 'round', linejoin = 'round') +
   scale_y_continuous(labels=scales::percent) +
-  labs(y= "Percentage of Prisons per Division with Confirmed Programs", x = "Program Category", fill = "Division", title = "Percentage of Prisons per Division with Confirmed Ag Programs")
+  labs(y= "Percentage of Prisons per Division with Confirmed Activities", x = "Activity Category", fill = "Division", title = "Percentage of Prisons per Division with Confirmed Ag Activities")
 
 ggsave("plot_ag_division3.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
@@ -909,14 +952,14 @@ All_Divisions_subcat_count_pct <- All_Divisions_subcat_count %>%
   mutate(pct = facilities_confirmed_ag_subcat/facilities_confirmed_ag)
 
 view(All_Divisions_subcat_count_pct %>%
-       group_by(`Program Category`) %>%
+       group_by(`Activity Category`) %>%
        summarise(count = n()))
 
 #Plot - Don't use. Think about what analysis to create.
 division4 <- ggplot(All_Divisions_subcat_count_pct, aes(x = `Subcategory`, y = pct, group = division)) +  
   geom_path(aes(color = division), alpha = 1 , size = 2,
             lineend = 'round', linejoin = 'round') +
-  facet_wrap( ~ `Program Category`) +
+  facet_wrap( ~ `Activity Category`) +
   scale_y_continuous(labels=scales::percent) +
   labs(y= "Percentage", x = "Activity Subcategory", fill = "Division", title = "Ag Activity Subcategory as a Percentage of Prisons with Confirmed Ag Activities") +
   coord_flip()
@@ -1057,7 +1100,7 @@ ggsave("map_race_eth_pct.png", plot = last_plot(), device="png", path = "./writi
 #Race/ethnicity (White non-Hispanic, Black non-Hispanic, Hispanic, so on) from 2005 census filtered to only state operated facilities that we have matched to All States data and that have confirmed programs
 race_ethnicity_census_confirmed_ag <- All_States_HIFLD_census %>%
   select(-`Culinary Arts and Food Service`) %>%
-  filter(`Confirmed Program`==1 & 
+  filter(`Confirmed Activities`==1 & 
            (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
   group_by(State) %>%
   summarise(all_race_eth_total = sum(V93, na.rm = TRUE), 
@@ -1092,7 +1135,7 @@ ggsave("map_race_eth_conf_ag_pct.png", plot = last_plot(), device="png", path = 
 #Race/ethnicity (White non-Hispanic, Black non-Hispanic, Hispanic, so on) from 2005 census filtered to only state operated facilities that we have matched to All States data and that have confirmed programs
 race_ethnicity_census_no_ag <- All_States_HIFLD_census %>%
   select(-`Culinary Arts and Food Service`) %>%
-  filter(`Confirmed Program` == 0) %>%
+  filter(`Confirmed Activities` == 0) %>%
   group_by(State) %>%
   summarise(all_race_eth_total = sum(V93, na.rm = TRUE), 
             count = n(),
@@ -1128,7 +1171,7 @@ ggsave("map_race_eth_no_ag_pct.png", plot = last_plot(), device="png", path = ".
 
 #Security, Gender, and Race/Ethnicity of All States and HIFLD (SECURELVL) entries with identified links to 2005 Census (All Other Variables)
 demographics <- All_States_HIFLD_census %>%
-       select(NAME.PrisonAg_cleaned, state, region, division, `Confirmed Program`, 
+       select(NAME.PrisonAg_cleaned, state, region, division, `Confirmed Activities`, 
               SECURELVL, V23, V94, V95, V96, V97, V98, #Security Levels from HIFLD (SECURELVL) and 2005 Census
               V22, #Gender, "Male", "Female", or "Both"
               V84, #"White", non-Hispanic
@@ -1171,31 +1214,31 @@ gg_gender <- ggplot(data=gender_region_division, aes(x=division, y=confirmed_ag_
 
 ggsave("plot_ag_gender.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#Are program categories (of facilities with confirmed programs and linked to census data) offered at male, female, or both?
-gender_program_category <- All_States_pivot %>%
+#Are activity categories (of facilities with confirmed activities and linked to census data) offered at male, female, or both?
+gender_activity_category <- All_States_pivot %>%
   inner_join(demographics, by = c("NAME.PrisonAg_cleaned", "state", "region", "division")) %>%
-  group_by(region, division, V22, `Program Category`) %>%
+  group_by(region, division, V22, `Activity Category`) %>%
   summarise(confirmed_ag_prisons = n())
 
 #Plot
-gg_gender_programs <- ggplot(data=gender_program_category, aes(x=`Program Category`, y = confirmed_ag_prisons)) +
+gg_gender_activities <- ggplot(data=gender_activity_category, aes(x=`Activity Category`, y = confirmed_ag_prisons)) +
   geom_col(aes(fill=`V22`)) +
-  labs(y = "Number of Prisons", x = "Program Category", title = "Prisons with Ag Programs by Gender and Program Category", fill = "Gender")
+  labs(y = "Number of Prisons", x = "Activity Category", title = "Prisons with Ag Activities by Gender and Activity Category", fill = "Gender")
 
-ggsave("plot_ag_gender_programs.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+ggsave("plot_ag_gender_activities.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Plot
-gg_gender_programs_region <- ggplot(data=gender_program_category, aes(x=`Program Category`, y = confirmed_ag_prisons)) +
+gg_gender_activities_region <- ggplot(data=gender_activity_category, aes(x=`Activity Category`, y = confirmed_ag_prisons)) +
   geom_col(aes(fill=`V22`)) +
   facet_wrap(~ region) +
-  labs(y = "Number of Prisons", x = "Program Category", title = "Prisons with Ag Programs by Gender and Program Category", fill = "Gender") 
+  labs(y = "Number of Prisons", x = "Activity Category", title = "Prisons with Ag Activities by Gender and Activity Category", fill = "Gender") 
 
-ggsave("plot_ag_gender_programs_region.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+ggsave("plot_ag_gender_activity_region.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #For each program category and gender classification, how many facilities have those programs as a percentage of the total facilities in our linked census dataset, broken down by gender? 
 gender_program_cat_pct <- All_States_pivot %>%
   inner_join(demographics, by = c("NAME.PrisonAg_cleaned", "state", "region", "division")) %>%
-  group_by(V22, `Program Category`) %>%
+  group_by(V22, `Activity Category`) %>%
   summarise(confirmed_ag_prisons = n()) %>%
   left_join((demographics %>%
   group_by(V22) %>%
@@ -1203,11 +1246,11 @@ gender_program_cat_pct <- All_States_pivot %>%
   mutate(pct = confirmed_ag_prisons/total_prisons)
 
 #Plot
-ggplot_gender_cat_pct <- ggplot(gender_program_cat_pct, aes(x = `Program Category`, y = pct, group = V22)) +  
+ggplot_gender_cat_pct <- ggplot(gender_activity_cat_pct, aes(x = `Activity Category`, y = pct, group = V22)) +  
   geom_path(aes(color = V22), alpha = 1 , size = 2,
             lineend = 'round', linejoin = 'round') +
   scale_y_continuous(labels=scales::percent) +
-  labs(y= "Percentage", x = "Program Category", fill = "Region", title = "Percentage of Facilities by Gender Offering Each Category of Programs", color = "Gender")
+  labs(y= "Percentage", x = "Activity Category", fill = "Region", title = "Percentage of Facilities by Gender Offering Each Category of Activities", color = "Gender")
 
 ggsave("plot_ag_gender_cat_pct.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
@@ -1420,7 +1463,7 @@ ggsave("plot_census_ag_function.png", plot = last_plot(), device = "png", path =
 #List of correctional facilities with Confirmed Yes (Yes=1) Programs, including Culinary Arts and Food Service
 All_States_confirmed_ag_ca <-
   All_States_finalresults %>%
-  filter(`Confirmed Program`==1 & 
+  filter(`Confirmed Activities`==1 & 
            (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(`Culinary Arts and Food Service`) | !is.na(Other))
   )
 
@@ -1428,8 +1471,8 @@ All_States_confirmed_ag_ca <-
 All_States_pivot_ca <-
   All_States_finalresults %>%
   replace_with_na(replace = list(Other = c("Sagebrush in Prisons Program"))) %>%
-  filter(`Confirmed Program`==1) %>%
-  pivot_longer(cols = c(`Horticulture`,`Crops`,`Animal Agriculture`,`Food Production`, `Culinary Arts and Food Service`,`Other`) , names_to = "Program Category", values_to = "Subcategory") %>%
+  filter(`Confirmed Activities`==1) %>%
+  pivot_longer(cols = c(`Horticulture`,`Crops`,`Animal Agriculture`,`Food Production`, `Culinary Arts and Food Service`,`Other`) , names_to = "Activity Category", values_to = "Subcategory") %>%
   drop_na(Subcategory) %>%
   mutate(Subcategory = str_replace_all(Subcategory, "Other: Horticultural class", "Horticulture")) %>%
   mutate(Subcategory = str_replace_all(Subcategory, "Horticulture programl ", "Horticulture;")) %>%
@@ -1471,6 +1514,21 @@ All_States_pivot_ca <-
   mutate(Subcategory = str_replace_all(Subcategory, "Composting\n", "Composting")) %>%
   mutate(Subcategory = trimws(Subcategory, which = "both"))
 
+#Number of correctional facilities by state with confirmed (Yes=1) activities within a category, including Culinary Arts and Food Service
+#Plus each facility within a given category as a percent of all facilities in that state that offer ag actvities
+#Plus each facility within a given category as a percent of all facilities in a state in our dataset
+All_States_cat_ca <-
+  All_States_pivot_ca %>%
+  group_by(State, state, region, division, `Confirmed Activities`,`Activity Category`) %>%
+  summarise(cat_tot = n()) %>% #number of facilities in a state with confirmed activity in a given category
+  left_join(All_States_Confirmed_Ag_count_ca, by = c("State", "state", "region", "division")) %>%
+  mutate(pct_of_facilities_confirmed_ag = cat_tot/facilities_confirmed_ag) %>% #percentage of confirmed ag facilities with a given activity
+  left_join((All_States_finalresults %>%
+               group_by(State, state, region, division) %>%
+               summarise(facilities_tot = n())), by = c("State", "state", "region", "division")) %>%
+  mutate(pct_of_facilities_tot = cat_tot/facilities_tot)
+
+
 #Solution: Number of prisons with confirmed activities in a subcategory, including Culinary Arts and Food Service
 
 #Calculate the max number of subcategories within a category at a prison
@@ -1491,17 +1549,17 @@ All_States_subcat_pivot_ca <-
   select(-`Stated Purpose of Activity`) %>%
   pivot_longer(cols=c(paste("Sub",1:max_col_ca, sep = "_")), names_to = "Temp", values_to = "Subcategory") %>%
   select(-Temp) %>%
-  drop_na("Subcategory")
+  drop_na("Subcategory") %>%
+  mutate(Subcategory = str_to_title(Subcategory)) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, " And ", " and ")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, " Or ", " or ")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, " And ", " and "))
 
 #Create table of selected columns from pivot subcategory table for Geocentroid analysis
 All_States_subcat_pivot_ca_export <-
   All_States_subcat_pivot_ca %>%
-  select(ID.PrisonAg, `Confirmed Program`, `Program Category`, Subcategory) %>%
-  mutate(Subcategory = str_to_title(Subcategory)) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, " And ", " and ")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, " Or ", " or ")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, " And ", " and ")) %>%
-  rename(Confirmed_Activity = `Confirmed Program`, Activity_Category = `Program Category`, Activity_Subcategory = `Subcategory`)
+  select(ID.PrisonAg, `Confirmed Activities`, `Activity Category`, Subcategory) %>%
+  rename(Confirmed_Activities = `Confirmed Activities`, Activity_Category = `Activity Category`, Activity_Subcategory = `Subcategory`)
 
 #Evaluate distinct values within Subcategory column
 #view(All_States_subcat_pivot_ca_export %>%
