@@ -27,7 +27,7 @@ library(naniar)
 #set Census API key, obtained at: http://api.census.gov/data/key_signup.html
 ###census_api_key("INSERT_KEY_HERE", install = TRUE)
 
-########Importing Prison Food/Ag Program Data########
+########Importing Prison Food/Ag Activity Data########
 
 #read in imported food/ag program data - states
 Becca_States <- read_excel("./data/raw_data/2020-05-26/Correctional_Facility_Hort_Programs_Becca.xlsx")
@@ -420,7 +420,7 @@ write_csv(All_States_confirmed_ag.count.ca.pct,
 
 #What? Counts of types (i.e. categories) of activities at state correctional facilities
 
-#List of Correctional Faciltiies + program activity categories and subcategories for Confirmed Programs excluding culinary arts (Yes=1)
+#List of Correctional Faciltiies + activity categories and subcategories for Confirmed activities excluding culinary arts (Yes=1)
 All_States_pivot <-
   All_States_finalresults %>%
   replace_with_na(replace = list(Other = c("Sagebrush in Prisons Program"))) %>%
@@ -548,7 +548,7 @@ write_csv(All_US_count,
 
 #Bar plot: number of prisons with activities in a category, excluding Culinary Arts and Food Service
 #c <- ggplot(data=All_States_count, aes(x=state, y=prisons_tot))+
-#  geom_col(aes(fill=`Program Category`))
+#  geom_col(aes(fill=`Activity Category`))
 
 #Question 1: What are the most common types of activities? 
 #Solution: Number of prisons with confirmed activities in a subcategory, excluding Culinary Arts and Food Service
@@ -882,14 +882,14 @@ manualviridis4 <- c("#31688EFF", "#FDE725FF", "#440154FF", "#35B779FF")
 
 #Question 2b. What are the regions?
 
-#Plot program categories broken down by region
+#Plot activity categories broken down by region
 region1 <- ggplot(data=All_Regions_count, aes(x=region, y=facilities_confirmed_ag)) +
   geom_col(aes(fill=`Activity Category`)) + 
   labs(y = "Number of Correctional Facilities", x = "Region", title = "Facilities with Ag Activities by Region")
 
 ggsave("plot_ag_region1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#Plot program categories broken down by division
+#Plot activity categories broken down by division
 division1 <- ggplot(data=All_Divisions_count, aes(x=division, y=facilities_confirmed_ag)) +
   geom_col(aes(fill=`Activity Category`)) + 
   labs(y = "Number of Correctional Facilities", x = "Division", title = "Facilities with Ag Activities by Regional Division") +
@@ -897,7 +897,7 @@ division1 <- ggplot(data=All_Divisions_count, aes(x=division, y=facilities_confi
 
 ggsave("plot_ag_division1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#Plot regions broken down by program categories
+#Plot regions broken down by activity categories
 region2 <- ggplot(data=All_Regions_count, aes(x=`Activity Category`, y=facilities_confirmed_ag)) +
   geom_col(aes(fill=`region`)) +
   scale_fill_manual(values = manualviridis4) +
@@ -905,14 +905,14 @@ region2 <- ggplot(data=All_Regions_count, aes(x=`Activity Category`, y=facilitie
 
 ggsave("plot_ag_region2.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#Plot divisions broken down by program categories
+#Plot divisions broken down by activity categories
 division2 <- ggplot(data=All_Divisions_count, aes(x=`Activity Category`, y=facilities_confirmed_ag)) +
   geom_col(aes(fill=`division`)) +
   labs(y= "Number of Correctional Facilities", x = "Activity Type", fill = "Division", title = "Correctional Facilities with Ag Activities")
 
 ggsave("plot_ag_division2.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#Calculate percentage of prisons in a regions with programs in a category
+#Calculate percentage of prisons in a regions with activities in a category
 All_Regions_pct_category <- All_Regions_count %>%
   left_join((All_Regions_Confirmed_Ag_pct %>%
                 select(region, all_prisons)),
@@ -928,7 +928,7 @@ region3 <- ggplot(All_Regions_pct_category, aes(x = `Activity Category`, y = pct
 
 ggsave("plot_ag_region3.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#Calculate percentage of prisons in a division with programs in a category
+#Calculate percentage of prisons in a division with activities in a category
 All_Divisions_pct_category <- All_Divisions_count %>%
   left_join((All_Divisions_Confirmed_Ag_pct %>%
                select(region, division, all_prisons)),
@@ -967,7 +967,7 @@ division4 <- ggplot(All_Divisions_subcat_count_pct, aes(x = `Subcategory`, y = p
 ggsave("plot_ag_division4.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 
-#Question 3. Why? What are the purposes of the programs?
+#Question 3. Why? What are the purposes of the activities?
 
 #Subset of all states  confirmed ag data with purpose not null
 #Need to make sure everyone has modified Purpose to exclude Culinary Arts
@@ -1033,7 +1033,7 @@ ggsave("plot_ag_region4plasmamanual.png", plot = last_plot(), device = "png", pa
 
 #ggsave("plot_ag_region5.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#States and count of prisons with stated purpose for ag programs
+#States and count of prisons with stated purpose for ag activities
 All_States_purpose_count <-
   All_States_purpose_pivot %>%
   group_by(State, state, Purpose) %>%
@@ -1058,7 +1058,7 @@ ggsave("map_purpose_conf_ag.png", plot = last_plot(), device="png", path = "./wr
 
 #Question 4. Who? Demographics
 
-#Security level at facilities where Ag/Food programs are offered broken down by region
+#Security level at facilities where Ag/Food activities are offered broken down by region
 security1 <- ggplot(data=All_States_confirmed_ag, aes(SECURELVL, ..count..)) +
   geom_bar(aes(fill=region)) +
   labs(y = "Number of Prisons", x = "Security Level", title = "Security Level at Correctional Facilities with Ag Activities")
@@ -1097,7 +1097,7 @@ gg_race_eth <- gg +
 
 ggsave("map_race_eth_pct.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#Race/ethnicity (White non-Hispanic, Black non-Hispanic, Hispanic, so on) from 2005 census filtered to only state operated facilities that we have matched to All States data and that have confirmed programs
+#Race/ethnicity (White non-Hispanic, Black non-Hispanic, Hispanic, so on) from 2005 census filtered to only state operated facilities that we have matched to All States data and that have confirmed activities
 race_ethnicity_census_confirmed_ag <- All_States_HIFLD_census %>%
   select(-`Culinary Arts and Food Service`) %>%
   filter(`Confirmed Activities`==1 & 
@@ -1132,7 +1132,7 @@ gg_race_eth_conf_ag <- gg +
 
 ggsave("map_race_eth_conf_ag_pct.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#Race/ethnicity (White non-Hispanic, Black non-Hispanic, Hispanic, so on) from 2005 census filtered to only state operated facilities that we have matched to All States data and that have confirmed programs
+#Race/ethnicity (White non-Hispanic, Black non-Hispanic, Hispanic, so on) from 2005 census filtered to only state operated facilities that we have matched to All States data and that have confirmed activities
 race_ethnicity_census_no_ag <- All_States_HIFLD_census %>%
   select(-`Culinary Arts and Food Service`) %>%
   filter(`Confirmed Activities` == 0) %>%
@@ -1167,7 +1167,7 @@ gg_race_eth_no_ag <- gg +
 ggsave("map_race_eth_no_ag_pct.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 
-#Stopped here. Need to break down by facility and look at which ones do and don't have types of programs.
+#Stopped here. Need to break down by facility and look at which ones do and don't have types of activities.
 
 #Security, Gender, and Race/Ethnicity of All States and HIFLD (SECURELVL) entries with identified links to 2005 Census (All Other Variables)
 demographics <- All_States_HIFLD_census %>%
@@ -1210,7 +1210,7 @@ gender_region_division <- All_States_Confirmed_Ag %>%
 #Plot
 gg_gender <- ggplot(data=gender_region_division, aes(x=division, y=confirmed_ag_prisons)) +
   geom_col(aes(fill=`V22`)) + 
-  labs(y = "Number of Prisons", x = "Division", title = "Prisons with Ag Programs by Gender and Regional Division", fill = "Gender")
+  labs(y = "Number of Prisons", x = "Division", title = "Prisons with Ag Activities by Gender and Regional Division", fill = "Gender")
 
 ggsave("plot_ag_gender.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
@@ -1235,8 +1235,8 @@ gg_gender_activities_region <- ggplot(data=gender_activity_category, aes(x=`Acti
 
 ggsave("plot_ag_gender_activity_region.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
-#For each program category and gender classification, how many facilities have those programs as a percentage of the total facilities in our linked census dataset, broken down by gender? 
-gender_program_cat_pct <- All_States_pivot %>%
+#For each activity category and gender classification, how many facilities have those activities as a percentage of the total facilities in our linked census dataset, broken down by gender? 
+gender_activity_cat_pct <- All_States_pivot %>%
   inner_join(demographics, by = c("NAME.PrisonAg_cleaned", "state", "region", "division")) %>%
   group_by(V22, `Activity Category`) %>%
   summarise(confirmed_ag_prisons = n()) %>%
@@ -1460,14 +1460,14 @@ ggsave("plot_census_ag_function.png", plot = last_plot(), device = "png", path =
 
 ########Clean and prepare prison agriculture data for Geocentroid project########
 
-#List of correctional facilities with Confirmed Yes (Yes=1) Programs, including Culinary Arts and Food Service
+#List of correctional facilities with Confirmed Yes (Yes=1) Activities, including Culinary Arts and Food Service
 All_States_confirmed_ag_ca <-
   All_States_finalresults %>%
   filter(`Confirmed Activities`==1 & 
            (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(`Culinary Arts and Food Service`) | !is.na(Other))
   )
 
-#List of Correctional Faciltiies + program activity categories and subcategories for Confirmed Programs (yes = 1) including Culinary arts
+#List of Correctional Faciltiies +  activity categories and subcategories for Confirmed Activities (yes = 1) including Culinary arts
 All_States_pivot_ca <-
   All_States_finalresults %>%
   replace_with_na(replace = list(Other = c("Sagebrush in Prisons Program"))) %>%
@@ -1574,8 +1574,7 @@ write_csv(All_States_subcat_pivot_ca_export,
 #Number of prisons by state with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
 All_States_subcat_count_ca <-
   All_States_subcat_pivot_ca %>%
-  mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot_ca$Subcategory))) %>%
-  group_by(state, region, `Confirmed Program`,`Program Category`, Subcategory) %>%
+  group_by(state, region, `Confirmed Activities`,`Activity Category`, Subcategory) %>%
   summarise(confirmed_ag_prisons = n())
 
 #Write to CSV
@@ -1584,7 +1583,7 @@ write_csv( All_States_subcat_count_ca,
            append=FALSE)
 
 view(All_States_subcat_count %>%
-       group_by(`Program Category`, Subcategory) %>%
+       group_by(`Activity Category`, Subcategory) %>%
        summarise(count = n()))
 
 ##################MISCELLANEOUS EDA##################################
@@ -1677,9 +1676,9 @@ Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp3 <-
   Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp2 %>%
   separate(col = "Type", into = c(letters[1:type_count_addy]), sep = "; ") %>%
   drop_na(a) %>%
-  pivot_longer(cols = 17:21, names_to = "Program_temp", values_to = "Type_temp") %>%
+  pivot_longer(cols = 17:21, names_to = "Activity_temp", values_to = "Type_temp") %>%
   drop_na(Type_temp) %>%
-  select(-Program_temp)
+  select(-Activity_temp)
 
 Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_count <-
   subset(Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp2, !is.na(Type)) %>%
@@ -1691,12 +1690,12 @@ Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_count <-
 Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_temp <-
   Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state %>%
   separate(col = "Other? (Identify if so)", into = c("A","B","C","D","E"), sep = "; ") %>%
-  pivot_longer(cols = 11:16, names_to = "Program_temp", values_to = "Type_temp")
+  pivot_longer(cols = 11:16, names_to = "Activity_temp", values_to = "Type_temp")
   
 Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_temp2 <-
   Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_temp %>%
-  mutate(Program = (gsub("A|B|C|D|E", "Other? (Identify if so)", Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_temp$Program_temp))) %>%
-  select(-Program_temp) %>%
+  mutate(Activity = (gsub("A|B|C|D|E", "Other? (Identify if so)", Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_temp$Program_temp))) %>%
+  select(-Activity_temp) %>%
   distinct()
 
 ###josh - count of 'Other' column distinct values
@@ -1719,17 +1718,17 @@ Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_count <-
 #     geom_bar(aes(fill = Type))
 #p
 #q <- ggplot(data = Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp2, aes(state, ..count..)) +
-#  geom_bar(aes(fill = Program))
+#  geom_bar(aes(fill = Activity))
 #q
 ####number of prisons with food & ag programs by state
 q2 <- ggplot(data = subset(Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp2, !is.na(Type)), aes(state, ..count..)) +
-  geom_bar(aes(fill = Program))
-q2 + labs(y = "Number of Prisons", x = "State", title = "Prisons with Food & Ag Programs")
+  geom_bar(aes(fill = Activity))
+q2 + labs(y = "Number of Prisons", x = "State", title = "Prisons with Food & Ag Activities")
 ####number of prisons with food & ag programs by subcategory and state
 q3 <- ggplot(data = Correctional_Facility_Contact_Tracking_Addy_States_SUMMER_state_temp3, aes(state, ..count..)) +
   geom_bar(aes(fill = Type_temp)) +
   facet_wrap(~ Program)
-q3 + labs(y = "Number of Prison Programs", x = "State", title = "Food & Ag Programs at Prisons",  subtitle = "By Category and Subcategory") +
+q3 + labs(y = "Number of Prison Programs", x = "State", title = "Food & Ag Activities at Prisons",  subtitle = "By Category and Subcategory") +
   guides(fill = guide_legend(title="Subcategories"))
 
 ###josh
@@ -1737,11 +1736,11 @@ s <- ggplot(data = subset(Correctional_Facility_Contact_Tracking_Josh_States_SUM
   geom_bar(aes(fill = Type))
 s
 t <- ggplot(data = Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_temp, aes(state, ..count..)) +
-  geom_bar(aes(fill = Program))
+  geom_bar(aes(fill = Activity))
 t
 u <- ggplot(data = subset(Correctional_Facility_Contact_Tracking_Josh_States_SUMMER_state_temp, !is.na(Type)), aes(state, ..count..)) +
   geom_bar(aes(fill = Type)) +
-  facet_wrap(~ Program)
+  facet_wrap(~ Activity)
 u
 
 map <- map_data("state")
@@ -1751,7 +1750,7 @@ d + geom_map(aes(map_id = state), map = map) +
   facet_wrap( ~ Type)
 d + geom_map(aes(map_id = state), map = map) +
   expand_limits(x = map$long, y = map$lat) +
-  facet_wrap( ~ Program)
+  facet_wrap( ~ Activity)
 
 
 #exploring census data
@@ -1948,7 +1947,7 @@ us_map + geom_sf(data = hifld, inherit.aes = FALSE) +
   scale_fill_brewer(palette = "OrRd") +
   coord_sf(crs = st_crs(4326))
 
-#read in imported food/ag program data - counties
+#read in imported food/ag activity data - counties
 #Becca_County <- read_excel("./data/raw_data/Correctional_Facility_Ag_Hort_Garden_Becca_States_SUMMER.xlsx", sheet = 2, col_names = FALSE)
 #Addy_County <- read_excel("data/raw_data/Correctional_Facility_Contact_Tracking_Addy_States_SUMMER.xlsx", sheet = 2)
 #Addy_County <- Addy_County[1:356,]
@@ -1994,7 +1993,7 @@ p + geom_polygon(color = "gray90", size = 0.1) +
 
 All_States_count_hort <-
   All_States_count %>%
-  filter(`Program Category`== "Horticulture")
+  filter(`Activity Category`== "Horticulture")
 #All_States_count_hort <- left_join(us_states, All_States_count_hort)
 
 #Plot our horticulture data in a map.
@@ -2017,16 +2016,16 @@ p2 <- p1  +
   scale_fill_gradient(low="#E5F5F9",high="#2CA25F") +
   labs(title = "State Prisons with Horticulture", fill = NULL)
 
-####number of prisons with food & ag programs by state
+####number of prisons with food & ag activities by state
 q <- ggplot(data = All_States_pivot, aes(state, ..count..)) +
-  facet_wrap(~ "Program Category")
+  facet_wrap(~ "Activity Category")
 
-q + labs(y = "Number of Prisons", x = "State", title = "Prisons with Food & Ag Programs")
-####number of prisons with food & ag programs by subcategory and state
+q + labs(y = "Number of Prisons", x = "State", title = "Prisons with Food & Ag Activities")
+####number of prisons with food & ag activities by subcategory and state
 r <- ggplot(data = All_States_pivot, aes(state, ..count..)) +
   geom_bar(aes(fill = Type_temp)) +
-  facet_wrap(~ Program)
-r + labs(y = "Number of Prison Programs", x = "State", title = "Food & Ag Programs at Prisons",  subtitle = "By Category and Subcategory") +
+  facet_wrap(~ Activity)
+r + labs(y = "Number of Prison Programs", x = "State", title = "Food & Ag Activities at Prisons",  subtitle = "By Category and Subcategory") +
   guides(fill = guide_legend(title="Subcategories"))
 
 #map U.S. counties
