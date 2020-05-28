@@ -1586,6 +1586,13 @@ view(All_States_subcat_count %>%
        group_by(`Activity Category`, Subcategory) %>%
        summarise(count = n()))
 
+#########Playing with COVID-19 Data##############
+
+test3 <- st_read("data/covid-19_behind_bars_data/data.kml")
+plot(test3[1])
+plot(test3[2])
+
+
 ##################MISCELLANEOUS EDA##################################
 
 #####ADDITIONAL CLEANING SCRIPTS - for future analyses of census record linkage #######
