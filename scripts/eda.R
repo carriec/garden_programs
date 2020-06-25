@@ -660,22 +660,27 @@ write_csv(
 
 plot(usa_composite(proj="laea"))
 
-us <- usa_composite()
-us_map <- fortify(us, region="name")
+#Old map using albers projection with Alaska/Hawaii. Retired map because of error with new version of ggplot2, as of June 24, 2020
+#us <- usa_composite()
+#us_map <- fortify(us, region="name")
+#gg <- ggplot()
+#gg <- gg + geom_map(data=us_map, map=us_map,
+#                    aes(x=long, y=lat, map_id=id),
+#                    color="#2b2b2b", size=0.1, fill=NA)
+#gg <- gg + theme_map() + 
+#  coord_proj(us_laea_proj)
 
-gg <- ggplot()
-gg <- gg + geom_map(data=us_map, map=us_map,
-                    aes(x=long, y=lat, map_id=id),
-                    color="#2b2b2b", size=0.1, fill=NA)
-gg <- gg + theme_map()
-
-#playing around
-#us_sf <- usa_sf("laea")
-#plot(us_sf["pop_2014"])
-#ggsf <- ggplot()
-#ggsf <- ggsf + geom_sf(data=us_sf,
-#                       size=0.1)
-#ggsf <- ggsf + theme_map()
+#New base map as of June 24, 2020
+us_sf <- usa_sf("laea")
+us_sf <- us_sf %>%
+  rename(State = name)
+gg <- ggplot() +
+  geom_sf(data = us_sf, size = 0.125)
+gg <- gg +
+  theme(panel.grid.major = element_line(colour = "transparent"), 
+        panel.background = element_rect(fill = "transparent")) +
+  coord_sf(datum = NA)
+gg
 
 #Prisons with Activities by State 
 gg_all <- gg +
@@ -1314,7 +1319,7 @@ security1
  
 #Agriculture/farming work assignments in 2005 census
 da24642.0001.filter.ag <- da24642.0001.filter %>%
-  select(id1, V1, NAME, CITY, STATE, ZIP, V208) %>%
+  select(id, V1, NAME, CITY, STATE, ZIP, V208) %>%
   left_join(f, by = c("STATE" = "state")) %>%
   rename("State" = state_name) %>%
   drop_na("State")
@@ -1342,28 +1347,51 @@ view(da24642.0001.filter.ag %>%
 #Where are they located?
 #By states
 da24642.0001.filter.ag.state.count <- da24642.0001.filter.ag %>%
-       select(id1, V1, NAME, CITY, STATE, ZIP, V208, State, region, division) %>%
+       select(id, V1, NAME, CITY, STATE, ZIP, V208, State, region, division) %>%
        group_by(State, V208) %>% 
        summarise(count = n()) %>%
        rename(`Farming/Agriculture Work Assignments` = V208)
 
+#Combine census ag work requirements with spatial data frame (us_sf) from albers package
+us_sf_ag <- us_sf %>%
+  left_join(da24642.0001.filter.ag.state.count %>%
+              filter(`Farming/Agriculture Work Assignments` == "(1) Yes")) %>%
+  mutate(count = replace_na(count, NA)) %>%
+  mutate(`Farming/Agriculture Work Assignments` = replace_na(`Farming/Agriculture Work Assignments`, "(1) Yes")) %>%
+  bind_rows(
+    us_sf %>%
+      left_join(da24642.0001.filter.ag.state.count %>%
+                  filter(`Farming/Agriculture Work Assignments` == "(0) No")) %>%
+      mutate(count = replace_na(count, NA)) %>%
+      mutate(`Farming/Agriculture Work Assignments` = replace_na(`Farming/Agriculture Work Assignments`, "(0) No"))
+  )
+
 #Map of state counts (Yes/No) for Farming/Ag Work Assignments
-gg +
-  geom_map(data=da24642.0001.filter.ag.state.count, map=us_map,
-           aes(fill=count, map_id=State),
-           color="white", size=0.1) +
-  ggtitle("State Operated Facilities with Farming/Agriculture Work Assignments") +
+ggplot(data=us_sf_ag, aes(fill = count)) +
+  geom_sf() +
+  theme(panel.grid.major = element_line(colour = "transparent"), 
+        panel.background = element_rect(fill = "transparent")) +
+  coord_sf(datum = NA) +
   facet_wrap( ~ `Farming/Agriculture Work Assignments`) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(option = "plasma", name="Facilities") +
-  theme(legend.position="right")
+  scale_fill_viridis(name="Facilities") +
+  theme(legend.position="right") +
+  labs(title = "U.S. Census, 2005", subtitle = "Facilities with Agricultural Work Requirements")
+
+ggsave("map_census_ag_work_reqs.tiff", plot = last_plot(), device = "tiff", dpi = 300, path = "./writing/eda_output/")
+
+#Count overall
+da24642.0001.filter.ag.us <- da24642.0001.filter.ag %>%
+  select(id, V1, NAME, CITY, STATE, ZIP, V208, region, division) %>%
+  group_by(V208) %>% 
+  summarise(count = n()) %>%
+  rename(`Farming/Agriculture Work Assignments` = V208)
 
 #By regional division
-view(da24642.0001.filter.ag %>%
-       select(id1, V1, NAME, CITY, STATE, ZIP, V208, region, division) %>%
+da24642.0001.filter.ag.region <- da24642.0001.filter.ag %>%
+       select(id, V1, NAME, CITY, STATE, ZIP, V208, region, division) %>%
        group_by(region, division, V208) %>% 
        summarise(count = n()) %>%
-       rename(`Farming/Agriculture Work Assignments` = V208))
+       rename(`Farming/Agriculture Work Assignments` = V208)
 
 #Plot by region
 #Plot work reqs broken down by region
@@ -1392,7 +1420,7 @@ ggsave("plot_census_ag_region2.png", plot = last_plot(), device="png", path = ".
 
 #Agriculture/farming work assignments in 2005 census
 da24642.0001.filter.ag.functions <- da24642.0001.filter %>%
-  select(id1, V1, NAME, CITY, STATE, ZIP, V208, V25:V36) %>%
+  select(id, V1, NAME, CITY, STATE, ZIP, V208, V25:V36) %>%
   left_join(f, by = c("STATE" = "state")) %>%
   rename("State" = state_name) %>%
   drop_na("State") %>%
@@ -1442,10 +1470,11 @@ da24642.0001.filter.ag.functions.pivot %>%
   filter(`Function at Facility` == "(1) Yes") %>%
   ggplot(aes(Function, ..count..)) +
   geom_bar(aes(fill=region)) +
-  labs(y = "State Operated Facilities", x = "Functions", fill = "Region", title = "Facilities by Function") +
-  coord_flip()
+  labs(y = "State Operated Correctional Facilities", x = "Functions", fill = "Region", title = "U.S. Census, 2005", subtitle = "Facilities with Designated Functions") +
+  coord_flip()+
+  scale_fill_viridis_d()
 
-ggsave("plot_census_function_region1.png", plot = last_plot(), device = "png", path = "./writing/eda_output/")
+ggsave("plot_census_function_region1.tiff", plot = last_plot(), device = "tiff", dpi=300, path = "./writing/eda_output/")
 
 #Plot functions broken down by work reqs
 da24642.0001.filter.ag.functions.pivot %>%
