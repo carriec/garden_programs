@@ -1,28 +1,37 @@
 #exploratory data analysis
 
 #library
-library(tidycensus)
-library(tigris)
+library(readxl) ## Read imported excel files
+library(hablar) ## Convert data types
+library(tigris) ## Get fips codes for Census geographic classifications
 options(tigris_use_cache = TRUE)
-library(tidyverse)
-library(readxl)
+library(tidyverse) ## For tidying data 
+library(RCurl) ## For downloading URLs
+library(sf) ## For reading simple features (sf) from a file / st_read function
+library(naniar) ## For replace_with_na function
+library(RecordLinkage) ## For linking records between multiple data sets
+library(albersusa) ## For plotting US map with Alaska/Hawaii elided
+library(viridis) ## For map color palette
+library(scales) ## For dot plots
+
+library(tidycensus)
 library(maps)
 library(geojsonR)
-library(sf)
-library(RCurl)
+
+
 library(tmaptools)
 library(ggmap)
-library(hablar)
-library(albersusa)
+
+
 library(ggalt)
-library(viridis)
+
 library(ggthemes)
-library(ggmosaic)
-library(RecordLinkage)
+
+
 library(forcats)
 library(readr)
 library(RColorBrewer)
-library(naniar)
+
 
 #set Census API key, obtained at: http://api.census.gov/data/key_signup.html
 ###census_api_key("INSERT_KEY_HERE", install = TRUE)
@@ -30,43 +39,60 @@ library(naniar)
 ########Importing Prison Food/Ag Activity Data########
 
 #read in imported food/ag program data - states
-Becca_States <- read_excel("./data/raw_data/2020-05-26/Correctional_Facility_Hort_Programs_Becca.xlsx")
-Becca_States <- Becca_States[1:145,c(1:3, 20:25,27)]
-Addy_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Addy_States_SUMMER.xlsx")
+Becca_States <- read_excel("./data/raw_data/2020-10-06/Correctional_Facility_Hort_Programs_Becca.xlsx")
+Becca_States <- Becca_States[1:179,c(1:3, 20:25,27)]
+Addy_States <- read_excel("data/raw_data/2020-10-06/Correctional_Facility_Contact_Tracking_Addy_States_SUMMER.xlsx")
 Addy_States <- Addy_States[, c(1:3, 15:21)]
-Josh_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Josh_States_NEWEST.xlsx")
+Josh_States <- read_excel("data/raw_data/2020-10-06/Correctional_Facility_Contact_Tracking_Josh_States_NEWEST.xlsx")
 Josh_States <- Josh_States[, c(1:3, 15:21)]
-Carrie_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Carrie_States.xlsx")
+Carrie_States <- read_excel("data/raw_data/2020-10-06/Correctional_Facility_Contact_Tracking_Carrie_States.xlsx")
 Carrie_States <- Carrie_States[, c(7,4,30,42:48)] %>%
   convert(dbl(`Confirmed_Program`))
-Azmal_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Azmal_States_SUMMER.xlsx")
+Azmal_States <- read_excel("data/raw_data/2020-10-06/Correctional_Facility_Contact_Tracking_Azmal_States_SUMMER.xlsx")
 Azmal_States <- Azmal_States[, c(1:3, 16:20, 22:23)]
-Azmal_States <- Azmal_States %>%
-  filter(State %in% c("Florida", "Nevada"))
-Evan_States <- read_excel("data/raw_data/2020-05-26/Correctional_Facility_Contact_Tracking_Evan_States_SUMMER.xlsx")
+Evan_States <- read_excel("data/raw_data/2020-10-06/Correctional_Facility_Contact_Tracking_Evan_States_SUMMER.xlsx")
 Evan_States <- Evan_States[, c(1:3, 15:21)]
 
 ########Cleaning Data########
 
 #rename columns to match
 Becca_States <- Becca_States %>%
-  rename(Crops = "Crops and silviculture", "Animal Agriculture" = "Animal agriculture",
-        "Food Production" = "Food production", "Culinary Arts and Food Service" = "Culinary arts and food service",
+  rename(
+    "Crops & Silviculture" = "Crops and silviculture", 
+   "Horticulture & Landscaping" = "Horticulture",
+     "Animal Agriculture" = "Animal agriculture",
+    "Food Processing & Production" = "Food production", "Culinary Arts & Food Service" = "Culinary arts and food service",
         "Stated Purpose of Activity" = "Stated Purpose of Activity (Ag/Horticulture)")
 Addy_States <- Addy_States %>%
-  rename("Culinary Arts and Food Service" = "Culinary Arts", Crops = "Crops and Silviculture",
+  rename("Culinary Arts & Food Service" = "Culinary Arts", 
+         "Crops & Silviculture" = "Crops and Silviculture",
+         "Horticulture & Landscaping" = "Horticulture",
+         "Food Processing & Production" = "Food Production",
          "Confirmed Program" = "Confirmed Programs")
 Josh_States <- Josh_States %>%
-  rename(Crops = "Crops and Silviculture")
+  rename("Food Processing & Production" = "Food Production",
+   "Crops & Silviculture" = "Crops and Silviculture",
+   "Horticulture & Landscaping" = "Horticulture",
+   "Culinary Arts & Food Service" = "Culinary Arts and Food Service"
+    )
 Carrie_States <- Carrie_States %>%
   rename(state = STATE, "Name of Correctional Facility" = "NAME", "Confirmed Program" = Confirmed_Program,
-         Crops = "Crops_and_silviculture", "Animal Agriculture" = Animal_agriculture,
-         "Food Production" = Food_production, "Culinary Arts and Food Service" = Culinary_arts_and_food_service)
+        "Crops & Silviculture" = "Crops_and_silviculture", 
+        "Horticulture & Landscaping" = "Horticulture",
+        "Animal Agriculture" = Animal_agriculture,
+         "Food Processing & Production" = Food_production, "Culinary Arts & Food Service" = Culinary_arts_and_food_service)
 Azmal_States <- Azmal_States %>%
-  rename(Crops = "Crops and Silviculture", "Confirmed Program" = "Confirmed Programs")
+  rename("Food Processing & Production" = "Food Production",
+    "Crops & Silviculture" = "Crops and Silviculture", 
+    "Horticulture & Landscaping" = "Horticulture",
+    "Culinary Arts & Food Service" = "Culinary Arts and Food Service",
+    "Confirmed Program" = "Confirmed Programs")
 Evan_States <- Evan_States %>%
-  rename(Crops = "Crops and silviculture", "Animal Agriculture" = "Animal agriculture",
-         "Food Production" = "Food production", "Culinary Arts and Food Service" = "Culinary arts and food service",
+  rename(
+    "Crops & Silviculture" = "Crops and silviculture", 
+    "Animal Agriculture" = "Animal agriculture",
+    "Horticulture & Landscaping" = "Horticulture",
+         "Food Processing & Production" = "Food production", "Culinary Arts & Food Service" = "Culinary arts and food service",
          "Confirmed Program" = "Confirmed Programs")
 
 #state fips codes
@@ -115,39 +141,105 @@ rm(Addy_States, All_Other_States, Azmal_States, Becca_States, Carrie_States,
             Evan_States, f, fips_codes, Josh_States)
 rm(region_state)
 
-#Import Assigned IDs from original February, 2020 dataset
-All_States_archive <- readRDS(file = "data/raw_data/2020-02-16/All_States.Rds")
-All_States_archive <- All_States_archive %>%
-  select(id, state, `Name of Correctional Facility`)
+########Join data set with February 2020 HIFLD IDs using previously created key and add ID.PrisonAg for new row entries########
+#(see: https://rpubs.com/ahmademad/RecordLinkage), (see: "scripts/Archive/eda.R" and "writing/eda_output_internal/Archive/2020-02-15/PrisonAg_HIFLD_ID_key.csv")
+
+#Import Assigned Prison Ag dataset ID and HIFLD Facility ID from original data record linkage in February 2020
+All_States_finalresults_202002 <- readRDS(file = "writing/eda_output_internal/Archive/2020-02-15/All_States_finalresults.Rds")
+All_States_finalresults_202002 <- All_States_finalresults_202002 %>%
+  select(ID.PrisonAg, state, NAME.Prison_Ag)
+
+#Import the key between Prison Ag and HIFLD IDs from February 2020
+PrisonAg_HIFLD_ID_key_202002 <- read_csv("./writing/eda_output_internal/Archive/2020-02-15/PrisonAg_HIFLD_ID_key.csv")
+
+#Remove OBJECT ID field (no longer appears in HIFLD data set as of September 2020)
+PrisonAg_HIFLD_ID_key_202002 <- PrisonAg_HIFLD_ID_key_202002 %>%
+  select(-OBJECTID, -FID)
+
+#Join final results to key  
+All_States_finalresults_202002_key_join <- All_States_finalresults_202002 %>%
+  convert(num(ID.PrisonAg)) %>%
+  left_join(PrisonAg_HIFLD_ID_key_202002, by = "ID.PrisonAg")
 
 #Join id based on the state and correctional facility
-All_States <- All_States %>%
-  left_join(All_States_archive, by = c("state", "Name of Correctional Facility"))
+All_States_join <- All_States %>%
+  mutate(NAME.Prison_Ag = toupper(`Name of Correctional Facility`)) %>%
+  full_join((All_States_finalresults_202002_key_join %>%
+            mutate(NAME.Prison_Ag = toupper(NAME.Prison_Ag)))
+            , by = c("state", "NAME.Prison_Ag")) 
 
-#Remove archived file
-rm(All_States_archive)
+###Remove facilities that are closed or privately owned
+#Remove ID.PrisonAg = 509 from joined data set - "Crowley County Correctional Facility" -- it is privately owned and should not have been included in February 2020 data
+#Remove ID.PrisonAg = 444 from joined data set - "New Castle Facility" (IN) - privately owned
+#Remove ID.PrisonAg = 439 from joined data set - Heritage Trail Correctional Facility" (IN) -  privately owned
+#Remove ID.PrisonAg = 623 from joined data set - "Lanesboro Correctional Institution" (NC) -- facility moved inmates and reopened as all female facility "Anson Correctional Institution - Female"
+#Remove ID.PrisonAg = 384 from joined data set - "Enfield Correctional Institution" (CT) -- facility closed January 23, 2018
+#Remove ID.PrisonAg = 18 from joined data set - "CHESAPEAKE DETENTION FACILITY" (MD) -- facility appears to be contracted as federal detention facility
+#Remove ID.PrisonAg = 245 from joined data set - "Pensacola Work Release Center" (FL) -- facility does not exist; updated data set to include "Pensacola Community Release Center" as a new entry 
+#Remove ID.PrisonAg = 246 from joined data set - "Panama City Work Release Center" (FL) -- facility does not exist; updated data set to include "Panama City Community Release Center" as a new entry 
+#Remove ID.PrisonAg = 244 from joined data set - "Tallahassee Work Release Center" (FL) -- facility does not exist; updated data set to include "Tallahassee Community Release Center" as a new entry 
+#Remove ID.PrisonAg = 136 from joined data set - "Bernadette Building" (RI) -- facility is technically open but has not housed inmates since 2016
 
-#Convert id to integer
-All_States <- All_States %>%
-  convert(int(id))
+All_States_join <- All_States_join %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 509) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 444) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 439) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 623) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 384) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 18) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 245) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 246) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 244) %>%
+  filter(is.na(ID.PrisonAg) | ID.PrisonAg != 136)
 
-#Add ID (next sequential) for new entry (Wisconsin resource center)
-All_States <- All_States %>%
-  mutate(id = replace_na(id, 998))
+##Check missing joins between Prison Ag and HIFLD from February 2020 datasets and correct
+view(All_States_join %>%
+  drop_na(ID.PrisonAg) %>%
+    select(`Name of Correctional Facility`, ID.PrisonAg, FACILITYID))
 
-#Relocate ID to first column
-#All_States <- All_States %>%
-#  relocate(id)
-All_States <- All_States %>%
-  select(id, everything())
+#Load original HIFLD from February 2020 and search for facilities identified above
+hifld_no_sf_20200215 <- readRDS(file = "data/hifld_data/2020-02-15/hifld_no_sf.Rds")
 
-#Save May 2020 data locally in project files
-saveRDS(All_States, file = "data/raw_data/2020-05-26/All_States.Rds")
+###Make updates based on identified FACILITYID
+#Add Facility ID to Women's Therapeutic Reentry Center in TN, which we have now identified as located at the West Tennessee State Penitentiary
+#and to Northern Correctional Facility in WV which we have now identified as 10001874	NORTHERN REGIONAL JAIL / CORRECTIONAL FACILITY
+#and SCI Phoenix in PA sits on the grounds (replaces) 10003101	SCI GRATERFORD
+#and Arrendale Probation RSAT and Arrendale TC in GA sit on the grounds of 10002102	ARRENDALE STATE PRISON
+#and Northwest Probation RSAT in GA sits on the grounds of 10000283	WALKER STATE PRISON
+#and Southern Maine Women's Reentry Center in ME sits on the grounds of 10001165	MAINE CORRECTIONAL CENTER
+#no further joins identified - Metro Reentry Facility only reopened in 2018 and did not appear in February 2020 HIFLD data
+All_States_join <- All_States_join %>%
+  mutate(FACILITYID = case_when
+         (ID.PrisonAg == 161 ~ 10001711,
+          ID.PrisonAg == 721 ~ 10001874,
+          ID.PrisonAg == 898 ~ 10003101,
+          ID.PrisonAg == 523 ~ 10002102,
+          ID.PrisonAg == 525 ~ 10002102,
+          ID.PrisonAg == 563 ~ 10000283,
+          ID.PrisonAg == 730 ~ 10001165,
+           TRUE ~ FACILITYID))
 
-#Load May 2020 data
-All_States <- readRDS(file = "data/raw_data/2020-05-26/All_States.Rds")
+#Add ID.PrisonAg for Wisconsin Resource Center to match May 26, 2020 assignment of ID.PrisonAg = 998
+All_States_join <- All_States_join %>%
+  mutate(ID.PrisonAg = case_when
+         (`Name of Correctional Facility` == "Wisconsin Resource Center" ~ 998,
+           TRUE ~ ID.PrisonAg))
 
-########Importing HIFLD Data########
+##Add ID.PrisonAg for all other new entries since February 2020
+#First, arrange rows by ID.Prison Ag
+All_States_join <- All_States_join %>%
+  arrange(ID.PrisonAg)
+
+#Then, add sequential new IDs
+All_States_join[is.na(All_States_join$ID.PrisonAg), "ID.PrisonAg"] <- seq(max(All_States_join$ID.PrisonAg, na.rm = TRUE) + 1, max(All_States_join$ID.PrisonAg, na.rm = TRUE) + sum(is.na(All_States_join$ID.PrisonAg)))
+
+#Assign newly added Northern Regional Jail (WV) to same FACILIITYID as Northern Correctional Facility (WV) - combined entry in HIFLD
+All_States_join <- All_States_join %>%
+  mutate(FACILITYID = case_when
+         (ID.PrisonAg == 1090 ~ 10001874,
+           TRUE ~ FACILITYID))
+
+########Importing new HIFLD Data (September 2020)########
 
 #HIFLD Prison Boundaries data
 #file_js = FROM_GeoJson(url_file_string = "https://opendata.arcgis.com/datasets/2d6109d4127d458eaf0958e4c5296b67_0.geojson", Average_Coordinates = TRUE)
@@ -175,131 +267,258 @@ ggplot() +
 #Convert HIFLD spatial data to data frame and save as Rdata
 hifld.no_sf <- as.data.frame(hifld) 
 class(hifld.no_sf) 
-saveRDS(hifld.no_sf, file = "data/hifld_data/2020-05-26/hifld_no_sf.Rds")
+saveRDS(hifld.no_sf, file = "data/hifld_data/2020-09-28/hifld_no_sf.Rds")
 rm(hifld)
 
 #Load
-hifld.no_sf <- readRDS(file = "data/hifld_data/2020-05-26/hifld_no_sf.Rds")
+hifld.no_sf <- readRDS(file = "data/hifld_data/2020-09-28/hifld_no_sf.Rds")
 
-#Select open adult (not juvenile) state facilities, excluding Puerto Rico and Washington, D.C. Add row numbers as column.
+########Checking for updated FACILITYID from HIFLD since February 2020########
+#Note: Although in general, FACILITYID did not change from February to September 2020, some changes were made
+
+hifld.comparison <- hifld.no_sf %>%
+  select(FID, FACILITYID, NAME, STATE, TYPE, STATUS) %>%
+  full_join((hifld_no_sf_20200215 %>%
+               select(FID, FACILITYID, NAME, STATE, TYPE, STATUS)), by = "FACILITYID")
+
+#Look at joins with the same FACILITYID but different name
+view(hifld.comparison %>%
+       filter (TYPE.x == "STATE" | TYPE.y == "STATE") %>%
+       filter(NAME.x != NAME.y))
+#Result of review: Need to manually update MCF - Moose Lake, Minnesota Sex Offender Program - Moose Lake
+
+#Update FACILITYID in All_States_join so that it now aligns with September 2020 HIFLD download
+All_States_join <- All_States_join %>%
+  mutate(FACILITYID = case_when
+         ( ID.PrisonAg == 69 ~ 10001319,  #MCF - Moose Lake
+           ID.PrisonAg == 79 ~ 10007020,  #Minnesota Sex Offender Program - Moose Lake
+           TRUE ~ FACILITYID))
+
+###################Adding new record linkage####################3
+
+#Part I: Perform record linkage between September 2020 HIFLD data and our collected data without FACILITYIDs
+#(see: https://rpubs.com/ahmademad/RecordLinkage)
+
+###To make joining easier (with less data entries), create subset of HIFLD data filtered for likely facilities 
+#Select open adult (not juvenile) state & county facilities (some state facilities classified in HIFLD as county), excluding Puerto Rico and Washington, D.C. Add row numbers as column.
 hifld.filter <- hifld.no_sf %>%
-  filter(STATUS %in% c("OPEN","NOT AVAILABLE") & TYPE %in% c("STATE","MULTI","NOT AVAILABLE") & SECURELVL %in% c("CLOSE","MAXIMUM","MEDIUM","MINIMUM","NOT AVAILABLE"))
+  filter(STATUS %in% c("OPEN","NOT AVAILABLE") & TYPE %in% c("COUNTY","STATE","MULTI","NOT AVAILABLE") & SECURELVL %in% c("CLOSE","MAXIMUM","MEDIUM","MINIMUM","NOT AVAILABLE"))
 
 hifld.filter <- hifld.filter %>%
-  filter(! STATE %in% c("DC","PR")) %>%
-  rownames_to_column(var = "id")
+  filter(! STATE %in% c("DC","PR")) 
 
-rm(hifld.no_sf)
-
-########Linking records from HIFLD for new prison ag entry########
-
-#Part I: Connect records via prior (February 2020) record linkage key between HIFLD data and our collected data
-#(see: https://rpubs.com/ahmademad/RecordLinkage), (see: "scripts/Archive/eda.R" and "writing/eda_output_internal/PrisonAg_HIFLD_ID_key.csv")
-
-key.archive <- read_csv("writing/eda_output_internal/Archive/PrisonAg_HIFLD_ID_key.csv")
-
-All_States <- All_States %>%
-  rename(ID.PrisonAg = id) %>%
-  mutate(NAME = toupper(`Name of Correctional Facility`))
-
-#Locate the new facility in the updated All States data (Wisconsin Resource Center), and find the matching record in the HIFLD data
-wrc <- hifld.no_sf %>%
-  filter(NAME == "WISCONSIN RESOURCE CENTER") %>%
+###Now filter out FACILITY IDs from hifld.filter that are not already assigned to Prison Ag (in All_States_join) 
+hifld.filter <- hifld.filter %>%
   convert(int(FACILITYID)) %>%
-  select(FID, OBJECTID, FACILITYID)
+  anti_join(All_States_join, by = "FACILITYID") %>%
+  rownames_to_column("id1")
 
-#Create key entry
-wrc <- bind_cols(
- (All_States %>%
-  filter(NAME == "WISCONSIN RESOURCE CENTER") %>%
-  select(ID.PrisonAg)),wrc)
+###Preprocessing: Select common fields and, in our data, convert name to upper case and trim
+hifld.rl <- hifld.filter %>%
+  select(id1, FACILITYID, NAME, STATE) %>%
+  mutate(NAME = str_replace_all(NAME, " & ", " AND ")) %>%
+  mutate(NAME = str_squish(str_replace_all(str_trim(NAME), "[^'[:^punct:]+]", " "))) %>%
+  mutate(NAME = str_replace_all(NAME, " AND ", " & "))
 
-#Add WRC entry to key archive
-key <- bind_rows(key.archive, wrc)
-  
+All_States.rl <- All_States_join %>%
+  filter(is.na(FACILITYID)) %>%
+  select(ID.PrisonAg, "Name of Correctional Facility", "state") %>%
+  mutate(`Name of Correctional Facility` = str_replace_all(`Name of Correctional Facility`, " & ", " AND ")) %>%
+  mutate(`Name of Correctional Facility` = str_squish(str_replace_all(str_trim(toupper(`Name of Correctional Facility`)), "[^'[:^punct:]+]", " "))) %>%
+  mutate(`Name of Correctional Facility` = str_replace_all(`Name of Correctional Facility`, " AND ", " & ")) %>%
+  rename(NAME = `Name of Correctional Facility`) %>%
+  rename(STATE = state) %>%
+  rownames_to_column("id2")
+
+#Create pairs from linking two data sets with cutoff between 0 and 1
+a <- compare.linkage(hifld.rl, All_States.rl, blockfld = c("STATE"), strcmp=T, exclude =(1:2))
+#print(head(a$pairs))
+b <- emWeights(a, cutoff = 0.95)
+#summary(b)
+#head(b)
+#allPairs <- getPairs(b)
+#head(allPairs)
+#write_csv(allPairs, path = "./writing/eda_output/allPairs.csv",
+#          append=FALSE)
+
+#Look at weights of pairs
+weights <- as.data.frame(b$Wdata)
+weights <- weights %>%
+  rename(Wdata = `b$Wdata`)
+#ggplot(weights, mapping=aes(Wdata)) +
+#  geom_histogram(binwidth = .01)
+#summary(weights$Wdata)
+table(weights$Wdata)
+
+#Retrieve the weight value that will serve as the upper threshold for Links (L)     
+upper <- max(weights$Wdata)
+
+#Set thresholds for predictions of Link (L), Possible (P), and Not a link (N)
+#Thresholds based on table weights, and iterative review of the Linkage.join data below
+c <- emClassify(b, threshold.lower = 0, threshold.upper = upper)
+#summary(c)
+linkage <- c$pairs
+linkage$weight <- c$Wdata
+linkage$links <- c$prediction
+linkage$id1 <- as.character(linkage$id1)
+linkage$id2 <- as.character(linkage$id2)
+
+rm(a, b, c)
+rm(weights)
+
+#Convert All_States_rl for join with final linkage results
+All_States.rl <- as.data.frame(All_States.rl)
+
+#Results of HIFLD and All States rl subsets joined using linkage key
+linkage.join <- linkage %>%
+  left_join(hifld.rl, by = "id1") %>%
+  left_join(All_States.rl, by = "id2")
+
+#Filtered for link (L) rows
+linkage.join_L <- linkage.join %>%
+  filter(links == "L")
+
+#Filtered for possible link (P) rows
+linkage.join_P <- linkage.join %>%
+  filter(links == "P") %>%
+  anti_join(linkage.join_L, by = "id1") %>%
+  anti_join(linkage.join_L, by = "id2")
+
+#Verify manually that all the links = P rows are actually links
+view(linkage.join_P)
+
+####
+#Manually verified that all entries above are actually links; remove any that are not links
+#linkage.join_P <- linkage.join_P %>%
+#  filter(!id1 == "") 
+
+#now joining with L rows
+linkage.join_LP <- bind_rows(linkage.join_L, linkage.join_P)
+
+#Examine the facilities that did not have matches
+linkage.join_N <- linkage.join %>%
+  filter(links == "N") %>%
+  anti_join(linkage.join_LP, by = "id1") %>%
+  anti_join(linkage.join_LP, by = "id2")
+
+#Examine the top match of facilities from All States data with linkage N    
+linkage.join_N_top_1 <- linkage.join_N %>%
+  group_by(id2) %>%
+  top_n(n = 1, wt = NAME.x)
+
+view(linkage.join_N_top_1)
+
+#Filter out non-matches
+linkage.join_N_matches <- linkage.join_N_top_1 %>%
+  filter(!NAME %in% c(    "NORTH ALABAMA COMMUNITY BASED FACILITY COMMUNITY WORK CENTER",
+                          "MURPHYSBORO LIFE SKILLS RE ENTRY CENTER",
+                          "MADISON COUNTY COMMUNITY WORK CENTER",
+                          "DELTA CORRECTIONAL FACILITY",
+                          "NORTHEAST NEW MEXICO CORRECTIONAL FACILITY",
+                          "WERNERSVILLE CCC 30",
+                          "WERNERSVILLE CCC 18",
+                          "DEERFIELD MEN'S WORK CENTER 2",
+                          "NORTHERN REGIONAL JAIL & CORRECTIONAL CENTER")) %>% #mismatches
+  filter(!NAME.y == "PEORIA COUNTY JAIL") #mismatches
+
+#Manually include facility matches not linked by name similarity
+linkage.join_N_unsimilar <- linkage.join_N %>%
+  filter(id1 == 1359 & id2 == 64) %>% #North Alabama Community Based Center / Community Work Center is Decatur Community Based Facility / Community Work Center
+  bind_rows(linkage.join_N %>%
+              filter(id1 == 3127 & id2 == 75)) # Delta Correctional Facility is Leflore County Technical Violation Center
+
+#Combine results so far
+linkage.join_prelimresults <- 
+  bind_rows(linkage.join_LP, linkage.join_N_matches, linkage.join_N_unsimilar)
+
+#See how many unique entries from All States have multiple linked HIFLD entries
+#linkage.join_multiple_hifld<- linkage.join_prelimresults %>%
+#  group_by(id2, STATE.y, NAME.y) %>%
+#  summarise(count = n()) %>%
+#  filter(count > 1)
+#remove(linkage.join_multiple_hifld)
+
+#See how many unique entries from HIFLD have multiple linked All States entries
+#linkage.join_multiple_All_States <- linkage.join_prelimresults %>%
+#  group_by(id1, STATE, NAME) %>%
+#  summarise(count = n()) %>%
+#  filter(count >1)
+#remove(linkage.join_multiple_All_States)
+
+#See which entries from All States are not in linked preliminary results
+All_States_no_HIFLD <- All_States.rl %>%
+  anti_join(linkage.join_prelimresults, by = "ID.PrisonAg")
+#Checked - the following facilities do not have entries in HIFLD but should be in the data:
+#NORTHEAST NEW MEXICO CORRECTIONAL FACILITY	NM
+#MURPHYSBORO LIFE SKILLS RE ENTRY CENTER	IL
+#MADISON COUNTY COMMUNITY WORK CENTER	MS
+#DEERFIELD MEN'S WORK CENTER 2	VA
+#WERNERSVILLE CCC 30	PA
+#WERNERSVILLE CCC 18	PA
+
+####Add new FACILITYIDs to prison ag data set in All_States_join
+
+All_States_join <- All_States_join %>%
+  select(-FACILITYID) %>%
+  right_join((linkage.join_prelimresults %>%
+              convert(num(FACILITYID)) %>%
+               select(FACILITYID, ID.PrisonAg)), by = c("ID.PrisonAg")) %>%
+  bind_rows(All_States_join %>%
+              anti_join(linkage.join_prelimresults, by = "ID.PrisonAg"))
+
+#####Create key for Geospatial Centroid work
+PrisonAg_HIFLD_ID_key <- All_States_join %>%
+  select(ID.PrisonAg, FACILITYID)
+
 #Save file
-write_csv(key, path = "writing/eda_output_internal/PrisonAg_HIFLD_ID_key.csv", append=FALSE)
+write_csv(PrisonAg_HIFLD_ID_key, path = "writing/eda_output_internal/Archive/2020-10-06/PrisonAg_HIFLD_ID_key.csv", append = FALSE)
 
-#Export All_States data for Prison Ag for Geocentroid Team Work
-All_States_export <-
-  All_States %>%
-  rename(Name = `Name of Correctional Facility`, `Confirmed_Activities` = `Confirmed Program`) %>%
-  select(ID.PrisonAg, Name, State, state, state_code, region, division, `Confirmed_Activities`)
+#Create list of Ag Activities for Geospatial Centroid work
 
-write_csv(All_States_export, path = "./writing/eda_output_internal/PrisonAg.csv", append=FALSE)
+#Export distinct ID.PrisonAg entries from All_States_join data for Prison Ag for Geocentroid Team Work
+PrisonAg <- All_States_join %>%
+  select(-FACILITYID) %>%
+  rename(Name = NAME.Prison_Ag, Confirmed_Activities = 'Confirmed Program') %>%
+  distinct() %>%
+  select(ID.PrisonAg, Name, State, state, state_code, region, division, Confirmed_Activities)
 
-#Remove unneeded datasets
-rm(linkage, linkage.join, linkage.join_extra, linkage.join_L, linkage.join_LP, linkage.join_N, linkage.join_P,
-   linkage.join_N_matches, linkage.join_N_top_1, linkage.join_N_top_2, linkage.join_N_top_3, linkage.join_full,
-   linkage.join_multiple_All_States, linkage.join_multiple_hifld, upper, linkage.join_finalresults, linkage.join_prelim_multi,
-   linkage.join_prelimresults, All_States_no_HIFLD)
+write_csv(PrisonAg, path = "writing/eda_output_internal/Archive/2020-10-06/PrisonAg.csv", append = FALSE)
 
-#Examine archive All_States_finalresults table that fully joins Prison Ag and HIFLD fields
-All_States_finalresults.archive <- readRDS(file = "writing/eda_output_internal/Archive/All_States_finalresults.Rds")
+####Save All_States, All_States_join for future work
+saveRDS(All_States, file = "data/raw_data/2020-10-06/All_States.Rds")
+saveRDS(All_States_join, file = "data/raw_data/2020-10-06/All_States_join.Rds")
 
-#Remove old version (archive) of prison ag data
-All_States_finalresults.archive <- All_States_finalresults.archive %>%
-  select(-c(`Confirmed Program`, Horticulture, Crops, `Animal Agriculture`,
-            `Food Production`, `Culinary Arts and Food Service`, Other, `Stated Purpose of Activity`))
+#Load October 2020 All_States_finalresults data
+All_States <- readRDS(file = "data/raw_data/2020-10-06/All_States.Rds")
+All_States_join <- readRDS(file = "data/raw_data/2020-10-06/All_States_join.Rds")
 
-#Remove old version (archive) of prison boundary HIFLD data
-All_States_finalresults.archive <- All_States_finalresults.archive %>%
-  select(-c(ADDRESS, CITY, STATE, ZIP, ZIP4, TELEPHONE, TYPE, STATUS, POPULATION, COUNTY, COUNTYFIPS,
-            COUNTRY, NAICS_CODE, NAICS_DESC, SOURCE, SOURCEDATE, VAL_METHOD, VAL_DATE,
-            WEBSITE, SECURELVL, CAPACITY, Shape_Leng, Shape_Area, Shape__Length, Shape__Area, geometry))
-
-#Join old version (archive) of remaining fileds to new All States data
-All_States <- All_States %>%
-  select(-NAME) %>%
-  left_join(All_States_finalresults.archive %>%
-              convert(num(ID.PrisonAg))) %>%
-  select(ID.HIFLD, ID.PrisonAg, state, state_code, State, region, division, everything()) %>%
-  convert(num(ID.HIFLD))
-
-wrc_2 <- All_States %>%
-  mutate(ID.HIFLD = case_when
-         (ID.PrisonAg == 998 ~ 735)) %>%
-  mutate(NAME.Prison_Ag = case_when
-         (ID.PrisonAg == 998 ~ "Wisconsin Resource Center")) %>%
-  mutate(NAME.PrisonAg_cleaned = case_when
-         (ID.PrisonAg == 998 ~ "WISCONSIN RESOURCE CENTER")) %>%
-  mutate(NAME.HIFLD = case_when
-         (ID.PrisonAg == 998 ~ "WISCONSIN RESOURCE CENTER")) %>%
-  mutate(NAME.HIFLD_cleaned = case_when
-         (ID.PrisonAg == 998 ~ "WISCONSIN REOURCE CENTER")) %>%
-  mutate(NAME.match = case_when
-         (ID.PrisonAg == 998 ~ 1)) %>%
-  filter(ID.PrisonAg == 998)
-
-#Replace Wisconsin Resource Center entry from All States with above data in wrc_2 
-All_States <- All_States %>%
-  filter(!ID.PrisonAg == 998) %>%
-  bind_rows(wrc_2)
-
-#Remove `Name of Correctional Facility` field (same as NAME.Prison_Ag)
-All_States <- All_States %>%
-  select(-`Name of Correctional Facility`)
+#Remove undeeded data
+remove(All_States_finalresults_202002)
+remove(All_States_finalresults_202002_key_join)
+remove(hifld_no_sf_20200215)
+remove(hifld.comparison)
+remove(PrisonAg_HIFLD_ID_key_202002)
+remove(All_States_no_HIFLD)
+remove(All_States.rl)
+remove(hifld.rl)
+remove(linkage, linkage.join, linkage.join_L, linkage.join_LP, linkage.join_N, linkage.join_N_matches,
+       linkage.join_N_top_1, linkage.join_N_unsimilar, linkage.join_P, linkage.join_prelimresults)
+remove(PrisonAg, PrisonAg_HIFLD_ID_key)
+remove(upper)
 
 #Join with HIFLD fields to create new All_States_finalresults table
-All_States_finalresults <- All_States %>%
-  left_join(hifld.filter %>%
-            rename(ID.HIFLD = id) %>%
-              convert(num(ID.HIFLD)) %>%
-              select(ID.HIFLD, ADDRESS, CITY, STATE, ZIP, ZIP4, TELEPHONE, TYPE, STATUS, POPULATION, COUNTY, COUNTYFIPS,
-                     COUNTRY, NAICS_CODE, NAICS_DESC, SOURCE, SOURCEDATE, VAL_METHOD, VAL_DATE,
-                     WEBSITE, SECURELVL, CAPACITY, Shape_Leng, SHAPE_Length, SHAPE_Area, geometry)) %>%
-  select(ID.HIFLD, ID.PrisonAg, state, state_code, State, region, division, NAME.match, NAME.HIFLD_cleaned,
-         NAME.PrisonAg_cleaned, NAME.HIFLD, NAME.Prison_Ag, everything())
+All_States_finalresults <- All_States_join %>%
+  select(-FACILITYID) %>%
+  distinct() %>%
+  select(ID.PrisonAg, NAME.Prison_Ag, state, state_code, State, region, division, everything())
 
-rm(All_States_finalresults.archive, key.archive, wrc, wrc_2, All_States)
+#Save September 2020 data locally in project files
+saveRDS(All_States_finalresults, file = "data/raw_data/2020-10-06/All_States_finalresults.Rds")
 
-#Save May 2020 data locally in project files
-saveRDS(All_States_finalresults, file = "data/raw_data/2020-05-26/All_States_finalresults.Rds")
+#Load September 2020 data
+All_States_finalresults <- readRDS(file = "data/raw_data/2020-10-06/All_States_finalresults.Rds")
 
-#Load May 2020 data
-All_States_finalresults <- readRDS(file = "data/raw_data/2020-05-26/All_States_finalresults.Rds")
-
-#Part II: Perform record linkage between HIFLD data and census data
+#Part II (Skipping this step for now): Perform record linkage between HIFLD data and census data
 #Note: Original linkage in Archive EDA script. 
 #(see: https://rpubs.com/ahmademad/RecordLinkage)
 
@@ -327,74 +546,69 @@ All_States_finalresults <- All_States_finalresults %>%
 
 #Total number of facilities by state with Confirmed (Yes=1/No=0) and Unconfirmed (NA) activities
 All_States_finalresults %>%
-       group_by(State, region, division, `Confirmed Actvities`) %>%
+       group_by(State, region, division, `Confirmed Activities`) %>%
        summarise(facilities_tot = n())
       
 #Write to CSV file
-write_csv(All_States_finalresults %>%
-            group_by(State, region, division, `Confirmed Activities`) %>%
-            summarise(facilities_tot = n()),
-          "./writing/eda_output/facilities_tot_state.csv",
-          append=FALSE)
+#write_csv(All_States_finalresults %>%
+#            group_by(State, region, division, `Confirmed Activities`) %>%
+#            summarise(facilities_tot = n()),
+#          "./writing/eda_output/facilities_tot_state.csv",
+#          append=FALSE)
 
-#List of correctional facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service
+#List of correctional facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service and Other
 All_States_confirmed_ag <-
   All_States_finalresults %>%
-  select(-`Culinary Arts and Food Service`) %>%
+  select(-`Culinary Arts & Food Service`, -Other) %>%
   filter(`Confirmed Activities`==1 & 
-           (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))
+           (!is.na(`Horticulture & Landscaping`) | !is.na(`Crops & Silviculture`) | !is.na(`Animal Agriculture`) | !is.na(`Food Processing & Production`))
   )
 
-#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service
+#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service and Other
 All_States_finalresults %>%
-       select(-`Culinary Arts and Food Service`) %>%
+  select(-`Culinary Arts & Food Service`, -Other) %>%
+  filter(`Confirmed Activities`==1 & 
+           (!is.na(`Horticulture & Landscaping`) | !is.na(`Crops & Silviculture`) | !is.na(`Animal Agriculture`) | !is.na(`Food Processing & Production`))) %>%
+  summarise(facilities_confirmed_ag=n())
+
+#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service but including Other
+All_States_finalresults %>%
+       select(-`Culinary Arts & Food Service`) %>%
        filter(`Confirmed Activities`==1 & 
-                (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
+                (!is.na(`Horticulture & Landscaping`) | !is.na(`Crops & Silviculture`) | !is.na(`Animal Agriculture`) | !is.na(`Food Processing & Production`)| !is.na(`Other`))) %>%
        summarise(facilities_confirmed_ag=n())
 
-#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Activities, including Culinary Arts and Food Service
+#View Sum for all states in US of Above List of Facilities with Confirmed Yes (Yes=1) Activities, including Culinary Arts and Food Service and Other
 All_States_finalresults %>%
        filter(`Confirmed Activities`==1 & 
-                (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(`Culinary Arts and Food Service`) | !is.na(Other))) %>%
+                (!is.na(`Horticulture & Landscaping`) | !is.na(`Crops & Silviculture`) | !is.na(`Animal Agriculture`) | !is.na(`Food Processing & Production`)| !is.na(`Other`)| !is.na(`Culinary Arts & Food Service`))) %>%
        summarise(facilities_confirmed_ag=n())
 
-#View sums for all states for facilities with confirmed/unconfirmed/confirmed no that have non-null category columns, excluding Culinary Arts and Food Service
+#View sums for all states for facilities with confirmed/unconfirmed/confirmed no that have non-null category columns, excluding Culinary Arts and Food Service and Other
 All_States_finalresults %>%
-       select(-`Culinary Arts and Food Service`) %>%
+       select(-`Culinary Arts & Food Service`, - Other) %>%
        filter(
-                (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
+         (!is.na(`Horticulture & Landscaping`) | !is.na(`Crops & Silviculture`) | !is.na(`Animal Agriculture`) | !is.na(`Food Processing & Production`))) %>%
        group_by(`Confirmed Activities`, state) %>%
-       summarise(facilities_confirmed_ag=n())
+       summarise(facilities_confirmed_ag=n()) %>%
+       arrange(desc(facilities_confirmed_ag))
 
-#Confirmed facilities with just crop and/or animal agriculture
-view(All_States_finalresults %>%
-       select(-`Culinary Arts and Food Service`) %>%
-       filter(`Confirmed Activities`==1 & 
-                (!is.na(Crops) | !is.na(`Animal Agriculture`))) %>%
-       summarise(facilities_confirmed_ag=n()))
-
-view(All_States_finalresults %>%
-       filter(`Confirmed Activities`==1 & 
-                (!is.na(Crops) | !is.na(`Animal Agriculture`))) %>%
-       group_by(region) %>%
-       summarise(count = n()))
-
-#Count by state Above List of Facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service
+#Count by state Above List of Facilities with Confirmed Yes (Yes=1) Activities, excluding Culinary Arts and Food Service and Other
 All_States_Confirmed_Ag_count <- All_States_finalresults %>%
-       select(-`Culinary Arts and Food Service`) %>%
+       select(-`Culinary Arts & Food Service`, - Other) %>%
        filter(`Confirmed Activities`==1 & 
-                (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(Other))) %>%
+                (!is.na(`Horticulture & Landscaping`) | !is.na(`Crops & Silviculture`) | !is.na(`Animal Agriculture`) | !is.na(`Food Processing & Production`))) %>%
        group_by(region, division, State, state) %>%
        summarise(facilities_confirmed_ag=n())
 
-#Count by state Above List of Facilities with Confirmed Yes (Yes=1) Activities, including Culinary Arts and Food Service
-All_States_Confirmed_Ag_count_ca <- All_States_finalresults %>%
-  filter(`Confirmed Activities`==1 & 
-           (!is.na(Horticulture) | !is.na(Crops) | !is.na(`Animal Agriculture`) | !is.na(`Food Production`) | !is.na(`Culinary Arts and Food Service`) | !is.na(Other))) %>%
-  group_by(region, division, State, state) %>%
-  summarise(facilities_confirmed_ag=n())
+#Count by state Above List of Facilities with Confirmed Yes (Yes=1) Activities, including Culinary Arts and Food Service and Other
+#All_States_Confirmed_Ag_count_ca <- All_States_finalresults %>%
+#  filter(`Confirmed Activities`==1 & 
+#            (!is.na(`Horticulture & Landscaping`) | !is.na(`Crops & Silviculture`) | !is.na(`Animal Agriculture`) | !is.na(`Food Processing & Production`))) %>%
+#  group_by(region, division, State, state) %>%
+#  summarise(facilities_confirmed_ag=n())
 
-#a)Sum for States of All Correctional Facilities in Our Data Set; b) Sum of Prisons with Confirmed (Yes=1) Activities, excluding Culinary Arts and Food Service, c) and Calculated as a Percentage (b/a)
+#a)Sum for States of All Correctional Facilities in Our Data Set; b) Sum of Prisons with Confirmed (Yes=1) Activities, excluding Culinary Arts and Food Service and Other, c) and Calculated as a Percentage (b/a)
 All_States_confirmed_ag.count.pct <- All_States_finalresults %>%
   group_by(State, state, region, division) %>%
   summarise(facilities_tot = n()) %>% #all facilities surveyed in each state
@@ -407,64 +621,55 @@ write_csv(All_States_confirmed_ag.count.pct,
 )
 
 #Above including culinary arts and food service
-All_States_confirmed_ag.count.ca.pct <- All_States_finalresults %>%
-  group_by(State, state, region, division) %>%
-  summarise(facilities_tot = n()) %>% #all facilities surveyed in each state
-  left_join(All_States_Confirmed_Ag_count_ca, by = c("State", "state", "division", "region")) %>%
-  mutate(pct = facilities_confirmed_ag/facilities_tot) #facilities with confirmed ag activities as a percentage of all facilities surveyed in each state
+#All_States_confirmed_ag.count.ca.pct <- All_States_finalresults %>%
+#  group_by(State, state, region, division) %>%
+#  summarise(facilities_tot = n()) %>% #all facilities surveyed in each state
+#  left_join(All_States_Confirmed_Ag_count_ca, by = c("State", "state", "division", "region")) %>%
+#  mutate(pct = facilities_confirmed_ag/facilities_tot) #facilities with confirmed ag activities as a percentage of all facilities surveyed in each state
 
 #Write CSV
-write_csv(All_States_confirmed_ag.count.ca.pct,
-          "./writing/eda_output/facilities_tot_state_confirmed_ag_count_ca_pct.csv",
-)
+#write_csv(All_States_confirmed_ag.count.ca.pct,
+#          "./writing/eda_output/facilities_tot_state_confirmed_ag_count_ca_pct.csv",
+#)
+
 
 #What? Counts of types (i.e. categories) of activities at state correctional facilities
-
-#List of Correctional Faciltiies + activity categories and subcategories for Confirmed activities excluding culinary arts (Yes=1)
+#List of Correctional Faciltiies + activity categories and subcategories for Confirmed activities excluding culinary arts and Other (Yes=1)
 All_States_pivot <-
   All_States_finalresults %>%
-  replace_with_na(replace = list(Other = c("Sagebrush in Prisons Program"))) %>%
-  select(-`Culinary Arts and Food Service`) %>%
+  select(ID.PrisonAg, state, state_code, State, region, division, NAME.Prison_Ag, `Confirmed Activities`, `Horticulture & Landscaping`, 
+         `Crops & Silviculture`, `Animal Agriculture`, `Food Processing & Production`, `Culinary Arts & Food Service`, Other 
+  ) %>%
+  # All_States %>%
+  # rename(`Confirmed Activities` = `Confirmed Program`, ID.PrisonAg = id) %>%
+  select(-`Culinary Arts & Food Service`, - Other) %>%
   filter(`Confirmed Activities`==1) %>%
-  pivot_longer(cols = c(`Horticulture`,`Crops`,`Animal Agriculture`,`Food Production`,`Other`) , names_to = "Activity Category", values_to = "Subcategory") %>%
+  pivot_longer(cols = c(`Horticulture & Landscaping`,`Crops & Silviculture`,`Animal Agriculture`,`Food Processing & Production`) , names_to = "Activity Category", values_to = "Subcategory") %>%
   drop_na(Subcategory) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Horticultural class", "Horticulture")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture programl ", "Horticulture;")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture program", "Horticulture")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Unspecified horticulture program", "Unspecified horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture", "Horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture class", "Horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Unspecified horticulture", "Horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "unspecified horticulture", "Horticulture")) %>%
   mutate(Subcategory = str_replace_all(Subcategory, "Horticulture Program", "Horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Horticulture program", "Horticulture")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "horticulture program", "Horticulture")) %>%
   mutate(Subcategory = str_replace_all(Subcategory, "Horticulture", "Horticulture Program")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Horses", "Equine")) %>%
   mutate(Subcategory = str_replace_all(Subcategory, "Master gardener program", "Master Gardener Class")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other Pesticide applicator", "Pesticide Applicator")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other;Pesticide applicator", "Pesticide Applicator")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Pesticide applicator", "Pesticide Applicator")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Aquaponics", "Aquaponics")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Butterfly hatchery", "Butterfly Hatchery")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Eggs", "Eggs")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Flower sales", "Flower Sales")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Honey production", "Honey Production")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Horticultural therapy", "Horticultural Therapy")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: House plants", "House Plants")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Hydroponics", "Hydroponics")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Flower garden", "Flowers")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Flower Garden", "Flowers")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "flower garden", "Flowers")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Flower production", "Flowers")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Flower starters", "Flowers")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Flower sales", "Flowers")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Pesticide applicator", "Pest Management")) %>%
+  mutate(Subcategory = str_replace_all(Subcategory, "Pesticide management", "Pest Management")) %>%
   mutate(Subcategory = str_replace_all(Subcategory, "Other: Juice Production", "Juice Production")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Mealpacking and donation", "Mealpacking and Donation")) %>%
   mutate(Subcategory = str_replace_all(Subcategory, "Other: Plant Science", "Plant Science")) %>%
   mutate(Subcategory = str_replace_all(Subcategory, "Other: Spice Production", "Spice Production")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Sagebrush cultivation", "Sagebrush Cultivation")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Seafood handling", "Seafood Handling")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: State Central Kitchen", "State Central Kitchen")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Vegetable and flower starters", "Vegetable and Flower Starters")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Other: Pesticide management", "Pesticide Management")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Pollinator garden", "Pollinator Habitat")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Pollinator Garden", "Pollinator Habitat")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Pollinator Gardens", "Pollinator Habitat")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Pollinator habitat", "Pollinator Habitat")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Pest Management", "Pesticide Management")) %>%
-  mutate(Subcategory = str_replace_all(Subcategory, "Composting\n", "Composting")) %>%
-  mutate(Subcategory = trimws(Subcategory, which = "both"))
+  mutate(Subcategory = str_replace_all(Subcategory, "Seafood orientation program", "Seafood Handling")) %>%
+  mutate(Subcategory = trimws(Subcategory, which = "both")) 
 
-#Number of correctional facilities by state with confirmed (Yes=1) activities within a category, excluding Culinary Arts and Food Service
+#Number of correctional facilities by state with confirmed (Yes=1) activities within a category, excluding Culinary Arts and Food Service and Other
 #Plus each facility within a given category as a percent of all facilities in that state that offer ag actvities
 #Plus each facility within a given category as a percent of all facilities in a state in our dataset
 All_States_cat <-
@@ -480,6 +685,19 @@ All_States_cat <-
 
 #Write to CSV
 write_csv(All_States_cat, "./writing/eda_output/facilities_tot_confirmed_ag_state_category.csv", append=FALSE)
+
+All_States_cat_count <- All_States_cat %>%
+       select(State, `Activity Category`) %>%
+       group_by(State) %>%
+       summarise(number_activity_types = n())
+
+All_States_cat_count_by_cat <- All_States_cat %>%
+  select(State, `Activity Category`) %>%
+  group_by(`Activity Category`) %>%
+  summarise(states_with_activity_type = n())
+
+#Write to CSV
+write_csv(All_States_cat, "./writing/eda_output/total_states_with_each_activity_type.csv", append=FALSE)
 
 #Number of correctional facilities by division with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
 All_Divisions_count <-
@@ -508,31 +726,46 @@ write_csv(All_Divisions_Confirmed_Ag_pct,
           "./writing/eda_output/prisons_tot_division_confirmed_ag_pct.csv",
 )
 
-#Number of prisons by region with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
-All_Regions_count <-
-  All_States_pivot %>%
-  group_by(region, `Confirmed Activities`,`Activity Category`) %>%
-  summarise(facilities_confirmed_ag = n())
-
-#Write to CSV
-write_csv(All_Regions_count,
-          "./writing/eda_output/prisons_tot_confirmed_ag_region_category.csv",
-          append=FALSE)
-
-#Sum for States of All Prisons Surveyed and Sum of Prisons with Confirmed (Yes=1) activities, excluding Culinary Arts and Food Service, and Percentage of Confirmed
+#Sum for States of All Prisons Surveyed and Sum of Prisons with Confirmed (Yes=1) activities, excluding Culinary Arts and Food Service and Other, and Percentage of Confirmed
 All_Regions_Confirmed_Ag_pct <- All_States_finalresults %>%
   group_by(region) %>%
-  summarise(all_prisons = n()) %>%
+  summarise(all_facilities = n()) %>%
   left_join((All_States_Confirmed_Ag_count %>%
                group_by(region) %>%
                summarise(facilities_confirmed_ag = sum(facilities_confirmed_ag))), 
             by = c("region")) %>%
-  mutate(pct = facilities_confirmed_ag/all_prisons)
+  mutate(pct = facilities_confirmed_ag/all_facilities)
 
 #Write CSV
 write_csv(All_Regions_Confirmed_Ag_pct,
           "./writing/eda_output/prisons_tot_region_confirmed_ag_pct.csv",
 )
+
+#Sum for Regions of All Prisons Surveyed and Sum of Prisons with Confirmed (Yes=1) activities by Category, excluding Culinary Arts and Food Service and Other, and Percentage of Facilities
+All_Regions_cat <- All_States_cat %>%
+  group_by(region, `Activity Category`) %>%
+  summarise(facilities_cat_tot = sum(cat_tot))%>%
+  left_join(All_States_finalresults %>%
+  group_by(region) %>%
+  summarise(facilities_tot = n()), by = "region") %>%
+  mutate(pct = facilities_cat_tot/facilities_tot)
+
+#Write CSV
+write_csv(All_Regions_cat,
+          "./writing/eda_output/prisons_tot_region_confirmed_ag_cat_pct.csv",
+)
+
+#Redundant of All_Regions_cat - check to see if any other code depends on it
+#Number of prisons by region with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service and Other
+#All_Regions_count <-
+#  All_States_pivot %>%
+#  group_by(region, `Confirmed Activities`,`Activity Category`) %>%
+#  summarise(facilities_confirmed_ag = n())
+
+#Write to CSV
+#write_csv(All_Regions_count,
+#          "./writing/eda_output/prisons_tot_confirmed_ag_region_category.csv",
+#          append=FALSE)
 
 
 #Number of prisons in US with confirmed (Yes=1) activities in a category, excluding Culinary Arts and Food Service
@@ -568,7 +801,6 @@ All_States_subcat <-
 #Pivot subcategory columns into rows
 All_States_subcat_pivot <-
   All_States_subcat %>%
-  select(-`Stated Purpose of Activity`) %>%
   pivot_longer(cols=c(paste("Sub",1:max_col, sep = "_")), names_to = "Temp", values_to = "Subcategory") %>%
   select(-Temp) %>%
   drop_na("Subcategory")%>%
@@ -583,31 +815,58 @@ All_States_subcat_pivot_export <-
   select(ID.PrisonAg, `Confirmed Activities`, `Activity Category`, Subcategory) %>%
   rename(Confirmed_Activities = `Confirmed Activities`, Activity_Category = `Activity Category`, Activity_Subcategory = `Subcategory`)
 
+view(All_States_subcat_pivot_export %>%
+       select(Activity_Category, Activity_Subcategory) %>%
+       distinct())
+
 #Export
 write_csv(All_States_subcat_pivot_export,
-          "./writing/eda_output_internal/PrisonAg_Activities_no_ca.csv",
+          "./writing/eda_output/PrisonAg_pivot_subcategories.csv",
           append=FALSE)
 
-#Number of prisons by state with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
+#Number of prisons by state with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service and Other
 All_States_subcat_count <-
   All_States_subcat_pivot %>%
   group_by(state, region, `Confirmed Activities`,`Activity Category`, Subcategory) %>%
-  summarise(confirmed_ag_prisons = n())
+  summarise(facilities_tot = n())
 
 #Write to CSV
 write_csv( All_States_subcat_count,
            "./writing/eda_output/prisons_tot_confirmed_ag_state_subcategory.csv",
            append=FALSE)
 
-view(All_States_subcat_count %>%
+All_US_subcat_count_rank_cat_group <- All_States_subcat_count %>%
   group_by(`Activity Category`, Subcategory) %>%
-    summarise(count = n()))
+    summarise(total = sum(facilities_tot)) %>%
+    arrange(`Activity Category`, desc(total)) %>%
+    mutate(`Rank in Activity Category` = rank(desc(total), ties.method = "min"))
 
-All_States_subcat_count %>%
-  group_by(`Activity Category`, Subcategory) %>%
-  summarise(count = n())
+All_US_subcat_count_rank_overall <- All_States_subcat_count %>%
+  group_by(Subcategory) %>%
+  summarise(total = sum(facilities_tot)) %>%
+  arrange(desc(total)) %>%
+  mutate(`Overall Rank` = rank(desc(total), ties.method = "min")) %>%
+  left_join(
+     (All_US_subcat_count_rank_cat_group %>%
+          distinct(`Activity Category`, Subcategory)), by = "Subcategory") %>%
+  select(`Activity Category`, Subcategory, `Overall Rank`)
 
-#Number of prisons by division with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
+###Dot plot of Top 4 Ranked Subcategories
+dot <- All_US_subcat_count_rank_cat_group %>%
+  filter(`Rank in Activity Category`<= 4) %>%
+  arrange(total) %>%    # First sort by rank This sort the dataframe but NOT the factor levels
+ mutate(Subcategory=factor(Subcategory, levels=Subcategory)) %>%   # This trick update the factor levels
+ ggplot(aes(x=Subcategory, y=total)) + 
+  geom_point(size=5, aes(colour = `Activity Category`)) +   # Draw points
+  scale_color_viridis(name = "Activity Type", discrete=TRUE) +
+  labs(x = "Activity Subcategory", y = "State Operated Facilities", title="Top Subcategories", 
+       subtitle="By Activity Type") +  
+  theme(axis.text = element_text(size=12)) +
+  coord_flip()
+
+ggsave("plot_ag_rank_subcategories.tiff", plot = last_plot(), device = "tiff", dpi = 300, path = "./writing/eda_output/")
+
+#Number of prisons by division with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service and Other
 All_Divisions_subcat_count <-
   All_States_subcat_pivot %>%
   mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
@@ -619,7 +878,7 @@ write_csv(All_Divisions_subcat_count,
           "./writing/eda_output/prisons_tot_confirmed_ag_division_subcategory.csv",
           append=FALSE)
 
-#Number of prisons by region with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service
+#Number of prisons by region with confirmed activities within category and subcategory, excluding Culinary Arts and Food Service and Other
 All_Regions_subcat_count <-
   All_States_subcat_pivot %>%
   mutate(Subcategory = str_trim(tolower(All_States_subcat_pivot$Subcategory))) %>%
@@ -653,10 +912,10 @@ write_csv(
 #c2_subcat <- ggplot(data=All_States_subcat_count, aes(x=`Subcategory`, y=prisons_tot))+
 #  geom_col(aes(fill=`state`))
 
-#Question 2: Where are things taking place around the country?
+########Question 2: Where are things taking place around the country?
 #Solution: 50 state map of total activities across all categories: Number of prisons with confirmed activities.
 
-#Map of 50 states using albersusa package
+#Loading 50 state data with geometry to produce maps using albersusa package
 
 plot(usa_composite(proj="laea"))
 
@@ -682,201 +941,276 @@ gg <- gg +
   coord_sf(datum = NA)
 gg
 
+#Add state geometry for maps
+All_States_Confirmed_Ag_count_sf <- us_sf %>%
+  select(State, geometry) %>%
+  left_join(All_States_Confirmed_Ag_count,
+            by = "State") %>%
+  drop_na(facilities_confirmed_ag)
+
 #Prisons with Activities by State 
-gg_all <- gg +
-  geom_map(data=All_States_Confirmed_Ag_count, map=us_map,
-           aes(fill=facilities_confirmed_ag, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Facilties") +
-  theme(legend.position="right") + 
+ggplot(data=All_States_Confirmed_Ag_count_sf, aes(fill = facilities_confirmed_ag)) +
+  geom_sf() +
+  theme(panel.grid.major = element_line(colour = "transparent"), 
+        panel.background = element_rect(fill = "transparent")) +
+  coord_sf(datum = NA) +
+  scale_fill_viridis(name="Facilities") +
+  theme(legend.position="right") +
   labs(title = "State Correctional Facilities with Ag Activities")
 
-ggsave("map_prisons_conf_ag.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+ggsave("map_prisons_confirmed_ag.tiff", plot = last_plot(), device = "tiff", dpi = 300, path = "./writing/eda_output/")
+
+#Add state geometry for maps (for same map above including Culinary Arts)
+#All_States_Confirmed_Ag_count_ca_sf <- us_sf %>%
+#  select(State, geometry) %>%
+#  left_join(All_States_Confirmed_Ag_count_ca,
+#            by = "State") %>%
+#  drop_na(facilities_confirmed_ag)
+
+#Add state geometry for maps
+All_States_confirmed_ag.count.pct_sf <- us_sf %>%
+  select(State, geometry) %>%
+  left_join(All_States_confirmed_ag.count.pct,
+            by = "State") %>%
+  drop_na(facilities_confirmed_ag)
 
 #Percentage of Prisons with Activities by State 
-gg_all_pct <- gg +
-  geom_map(data=All_States_confirmed_ag.count.pct, map=us_map,
-           aes(fill=pct, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Percent", labels=scales::percent) +
+ggplot(data=All_States_confirmed_ag.count.pct_sf, aes(fill = pct)) +
+  geom_sf() +
+  theme(panel.grid.major = element_line(colour = "transparent"), 
+        panel.background = element_rect(fill = "transparent")) +
+  coord_sf(datum = NA) +
+  scale_fill_viridis(name="Percent",  labels=scales::percent) +
   theme(legend.position="right") +
-  labs(title = "Percent of State Correctional Facilities with Ag Activities")
+  labs(title = "Facilities with Ag Activities as Percent of State Correctional Facilities")
 
-ggsave("map_pct_prisons_conf_ag.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+ggsave("map_prisons_confirmed_ag_pct.tiff", plot = last_plot(), device = "tiff", dpi = 300, path = "./writing/eda_output/")
+
+#Add state geometry for maps (for same map as above with Culinary Arts)
+#All_States_confirmed_ag.count.ca.pct <- us_sf %>%
+#  select(State, geometry) %>%
+#  left_join(All_States_confirmed_ag.count.ca.pct,
+#            by = "State") %>%
+#  drop_na(facilities_confirmed_ag)
 
 #Question 2a: Are there certain parts of the country with certain activities more so than others? 
 #Solution: 50 state map of each category: Number of prisons with confirmed activities.
 
-#Map with a count of the prisons in each state that have confirmed ag activities, excluding Other
-gg_all_cat <- gg +
-  geom_map(data=
-             (All_States_cat %>%
-                filter(!`Activity Category` == "Other"))
-              , map=us_map,
-           aes(fill=facilities_confirmed_ag, map_id=State),
-           color="white", size=0.1) +
-  ggtitle("States with Confirmed Ag Activities") +
-  facet_wrap( ~ `Activity Category`) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Facilities") +
-  theme(legend.position="right")+
-  labs(title = "State Correctional Facilities with Ag by Activity Type")
+#Add state geometry for mapping and link with all categories associated with all states
+usf_sf_cat <- us_sf %>% 
+  left_join((All_States_finalresults %>% distinct(State) %>%
+               crossing(All_States_subcat_pivot_export %>% distinct (Activity_Category)))
+             , by = "State") %>%
+  drop_na(Activity_Category) %>%
+  select(State, Activity_Category) %>%
+  rename(`Activity Category` = Activity_Category) %>%
+  left_join(All_States_cat, by = c("State", "Activity Category"))
 
-ggsave("map_prisons_confirmed_ag_cat.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#Map with a count of the prisons in each state that have confirmed ag activities
+ggplot(data=
+         (usf_sf_cat 
+          #%>%
+         #   filter(!`Activity Category` == "Other")
+          )
+         , aes(fill = cat_tot)) +
+  geom_sf() +
+  theme(panel.grid.major = element_line(colour = "transparent"), 
+        panel.background = element_rect(fill = "transparent")) +
+  coord_sf(datum = NA) + 
+  facet_wrap( ~ `Activity Category`) +
+  scale_fill_viridis(name="Facilities", na.value = "white") +
+  theme(legend.position="right") +
+  labs(title = "State Correctional Facilities with Ag Activities", subtitle = "By Activity Type")
+
+ggsave("map_prisons_confirmed_ag_cat.tiff", plot = last_plot(), device="tiff", dpi = 300, path = "./writing/eda_output/")
+
+#old map code
+#gg_all_cat <- gg +
+#  geom_map(data=
+#             (All_States_cat %>%
+#                filter(!`Activity Category` == "Other"))
+#              , map=us_map,
+#           aes(fill=facilities_confirmed_ag, map_id=State),
+#           color="white", size=0.1) +
+#  ggtitle("States with Confirmed Ag Activities") +
+#  facet_wrap( ~ `Activity Category`) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Facilities") +
+#  theme(legend.position="right")+
+#  labs(title = "State Correctional Facilities with Ag by Activity Type")
+
+#ggsave("map_prisons_confirmed_ag_cat.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Map of the percentage of prisons within a state in our dataset that have confirmed ag activities by category
-gg_all_cat_pct <- gg +
-  geom_map(data=(All_States_cat %>%
-                   filter(!`Activity Category` == "Other")),
-           map=us_map,
-           aes(fill=pct_of_facilities_tot, map_id=State),
-           color="white", size=0.1) +
-  ggtitle("Percent of State Correctional Facilities with Ag by Activity Type") +
+ggplot(data=
+         (usf_sf_cat
+          #%>%
+          #  filter(!`Activity Category` == "Other")
+          )
+       , aes(fill = pct_of_facilities_tot)) +
+  geom_sf() +
+  theme(panel.grid.major = element_line(colour = "transparent"), 
+        panel.background = element_rect(fill = "transparent")) +
+  coord_sf(datum = NA) + 
   facet_wrap( ~ `Activity Category`) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Percent", labels=scales::percent) +
-  theme(legend.position="right")
+  scale_fill_viridis(name="Percent",  labels=scales::percent, na.value = "white") +
+  theme(legend.position="right") +
+  labs(title = "Facilities with Ag Activities as Percent of State Correctional Facilities", subtitle = "By Activity Type")
 
-ggsave("map_pct_prisons_conf_ag_cat.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+ggsave("map_pct_prisons_conf_ag_cat.tiff", plot = last_plot(), device="tiff", dpi = 300, path = "./writing/eda_output/")
 
+#Old Map
+#gg_all_cat_pct <- gg +
+#  geom_map(data=(All_States_cat %>%
+#                   filter(!`Activity Category` == "Other")),
+#           map=us_map,
+#           aes(fill=pct_of_facilities_tot, map_id=State),
+#           color="white", size=0.1) +
+#  ggtitle("Percent of State Correctional Facilities with Ag by Activity Type") +
+#  facet_wrap( ~ `Activity Category`) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Percent", labels=scales::percent) +
+#  theme(legend.position="right")
+
+#ggsave("map_pct_prisons_conf_ag_cat.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+
+
+#Maps by activity - outdated, need to replace with geom_sf scripts
 #Prisons with Horticulture Activities by State
-All_States_count_hort <-
-  All_States_count %>%
-  filter(`Activity Category`== "Horticulture")
+#All_States_count_hort <-
+#  All_States_count %>%
+#  filter(`Activity Category`== "Horticulture & Landscaping")
 
 #Map of prisons with Horticulture Activities
-gg_hort <- gg + 
-  geom_map(data=All_States_count_hort, map=us_map,
-           aes(fill=confirmed_ag_prisons, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Prisons with Horticulture") +
-  theme(legend.position="right")
+#gg_hort <- gg + 
+#  geom_map(data=All_States_count_hort, map=us_map,
+#           aes(fill=confirmed_ag_prisons, map_id=State),
+#           color="white", size=0.1) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Prisons with Horticulture & Landscaping") +
+#  theme(legend.position="right")
 
-ggsave("map_prisons_conf_hort.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("map_prisons_conf_hort.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Percentage of prisons with Horticulture Activities
-All_States_pct_hort <- All_States %>%
-  group_by(State, state) %>%
-  summarise(all_prisons = n()) %>%
-  left_join(All_States_count_hort, by = c("State", "state")) %>%
-  mutate(Pct = confirmed_ag_prisons/all_prisons)
+#All_States_pct_hort <- All_States %>%
+#  group_by(State, state) %>%
+#  summarise(all_prisons = n()) %>%
+#  left_join(All_States_count_hort, by = c("State", "state")) %>%
+#  mutate(Pct = confirmed_ag_prisons/all_prisons)
 
 #Map
-gg_hort_pct <- gg + 
-  geom_map(data=All_States_pct_hort, map=us_map,
-           aes(fill=Pct, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Percentage of Prisons with Horticulture") +
-  theme(legend.position="right")
+#gg_hort_pct <- gg + 
+#  geom_map(data=All_States_pct_hort, map=us_map,
+#           aes(fill=Pct, map_id=State),
+#           color="white", size=0.1) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Percentage of Prisons with Horticulture & Landscaping") +
+#  theme(legend.position="right")
 
-ggsave("map_pct_prisons_conf_hort.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("map_pct_prisons_conf_hort.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Prisons with Crops and Silviculture by State
-All_States_count_crops <-
-  All_States_count %>%
-  filter(`Activity Category`== "Crops")
+#All_States_count_crops <-
+#  All_States_count %>%
+#  filter(`Activity Category`== "Crops & Silviculture")
 
 #Map of Prisons with Crops and Silviculture
-gg_crops <- gg + 
-  geom_map(data=All_States_count_crops, map=us_map,
-           aes(fill=confirmed_ag_prisons, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Prisons with Crops and Silviculture") +
-  theme(legend.position="right")
+#gg_crops <- gg + 
+#  geom_map(data=All_States_count_crops, map=us_map,
+#           aes(fill=confirmed_ag_prisons, map_id=State),
+#           color="white", size=0.1) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Prisons with Crops & Silviculture") +
+#  theme(legend.position="right")
 
-ggsave("map_prisons_conf_crops.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("map_prisons_conf_crops.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Percentage of Prisons with Crops and Silviculture
-All_States_pct_crops <- All_States %>%
-  group_by(State, state) %>%
-  summarise(all_prisons = n()) %>%
-  left_join(All_States_count_crops, by = c("State", "state")) %>%
-  mutate(Pct = confirmed_ag_prisons/all_prisons)
+#All_States_pct_crops <- All_States %>%
+#  group_by(State, state) %>%
+#  summarise(all_prisons = n()) %>%
+#  left_join(All_States_count_crops, by = c("State", "state")) %>%
+#  mutate(Pct = confirmed_ag_prisons/all_prisons)
 
 #Map
-gg_crops_pct <- gg + 
-  geom_map(data=All_States_pct_crops, map=us_map,
-           aes(fill=Pct, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Percentage of Prisons with Crops and Silviculture") +
-  theme(legend.position="right")
+#gg_crops_pct <- gg + 
+#  geom_map(data=All_States_pct_crops, map=us_map,
+#           aes(fill=Pct, map_id=State),
+#           color="white", size=0.1) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Percentage of Prisons with Crops & Silviculture") +
+#  theme(legend.position="right")
 
-ggsave("map_pct_prisons_conf_crops.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("map_pct_prisons_conf_crops.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Prisons with Animal Ag by State
-All_States_count_animals <-
-  All_States_count %>%
-  filter(`Activity Category`== "Animal Agriculture")
+#All_States_count_animals <-
+#  All_States_count %>%
+#  filter(`Activity Category`== "Animal Agriculture")
 
 #Map of Prisons with Animal Ag
-gg_animals <- gg + 
-  geom_map(data=All_States_count_animals, map=us_map,
-           aes(fill=confirmed_ag_prisons, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Prisons with Animal Agriculture") +
-  theme(legend.position="right")
+#gg_animals <- gg + 
+#  geom_map(data=All_States_count_animals, map=us_map,
+#           aes(fill=confirmed_ag_prisons, map_id=State),
+#           color="white", size=0.1) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Prisons with Animal Agriculture") +
+#  theme(legend.position="right")
 
-ggsave("map_prisons_conf_animals.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("map_prisons_conf_animals.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Percentage of Prisons with Animal Agriculture
-All_States_pct_animals <- All_States %>%
-  group_by(State, state) %>%
-  summarise(all_prisons = n()) %>%
-  left_join(All_States_count_animals, by = c("State", "state")) %>%
-  mutate(Pct = confirmed_ag_prisons/all_prisons)
+#All_States_pct_animals <- All_States %>%
+#  group_by(State, state) %>%
+#  summarise(all_prisons = n()) %>%
+#  left_join(All_States_count_animals, by = c("State", "state")) %>%
+#  mutate(Pct = confirmed_ag_prisons/all_prisons)
 
 #Map
-gg_animals_pct <- gg + 
-  geom_map(data=All_States_pct_animals, map=us_map,
-           aes(fill=Pct, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Percentage of Prisons with Animal Agriculture") +
-  theme(legend.position="right")
+#gg_animals_pct <- gg + 
+#  geom_map(data=All_States_pct_animals, map=us_map,
+#           aes(fill=Pct, map_id=State),
+#           color="white", size=0.1) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Percentage of Prisons with Animal Agriculture") +
+#  theme(legend.position="right")
 
-ggsave("map_pct_prisons_conf_animals.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("map_pct_prisons_conf_animals.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Prisons with Food Production & Processing by State
-All_States_count_food <-
-  All_States_count %>%
-  filter(`Activity Category`== "Food Production")
+#All_States_count_food <-
+#  All_States_count %>%
+#  filter(`Activity Category`== "Food Processing & Production")
 
 #Map of Prisons with Food Production & Processing by State
-gg_food <- gg + 
-  geom_map(data=All_States_count_food, map=us_map,
-           aes(fill=confirmed_ag_prisons, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Prisons with Food Production & Processing") +
-  theme(legend.position="right")
+#gg_food <- gg + 
+#  geom_map(data=All_States_count_food, map=us_map,
+#           aes(fill=confirmed_ag_prisons, map_id=State),
+#           color="white", size=0.1) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Prisons with Food Processing & Production") +
+#  theme(legend.position="right")
 
-ggsave("map_prisons_conf_food.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("map_prisons_conf_food.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Percentage of Prisons with Food Production & Processing
-All_States_pct_food <- All_States %>%
-  group_by(State, state) %>%
-  summarise(all_prisons = n()) %>%
-  left_join(All_States_count_food, by = c("State", "state")) %>%
-  mutate(Pct = confirmed_ag_prisons/all_prisons)
+#All_States_pct_food <- All_States %>%
+#  group_by(State, state) %>%
+#  summarise(all_prisons = n()) %>%
+#  left_join(All_States_count_food, by = c("State", "state")) %>%
+#  mutate(Pct = confirmed_ag_prisons/all_prisons)
 
 #Map
-gg_food_pct <- gg + 
-  geom_map(data=All_States_pct_food, map=us_map,
-           aes(fill=Pct, map_id=State),
-           color="white", size=0.1) +
-  coord_proj(us_laea_proj) +
-  scale_fill_viridis(name="Percentage of Prisons with Food Production & Processing") +
-  theme(legend.position="right")
+#gg_food_pct <- gg + 
+#  geom_map(data=All_States_pct_food, map=us_map,
+#           aes(fill=Pct, map_id=State),
+#           color="white", size=0.1) +
+#  coord_proj(us_laea_proj) +
+#  scale_fill_viridis(name="Percentage of Prisons with Food Processing & Production") +
+#  theme(legend.position="right")
 
-ggsave("map_pct_prisons_conf_food.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
-
+#ggsave("map_pct_prisons_conf_food.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Set viridis color palette for regional analyses
 manualviridis4 <- viridis_pal()(4)
@@ -888,27 +1222,53 @@ manualviridis4 <- c("#31688EFF", "#FDE725FF", "#440154FF", "#35B779FF")
 #Question 2b. What are the regions?
 
 #Plot activity categories broken down by region
-region1 <- ggplot(data=All_Regions_count, aes(x=region, y=facilities_confirmed_ag)) +
-  geom_col(aes(fill=`Activity Category`)) + 
-  labs(y = "Number of Correctional Facilities", x = "Region", title = "Facilities with Ag Activities by Region")
+#region1 <- ggplot(data=All_Regions_count, aes(x=region, y=facilities_confirmed_ag)) +
+#  geom_col(aes(fill=`Activity Category`)) + 
+#  labs(y = "Number of Correctional Facilities", x = "Region", title = "Facilities with Ag Activities by Region")
 
-ggsave("plot_ag_region1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("plot_ag_region1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Plot activity categories broken down by division
-division1 <- ggplot(data=All_Divisions_count, aes(x=division, y=facilities_confirmed_ag)) +
-  geom_col(aes(fill=`Activity Category`)) + 
-  labs(y = "Number of Correctional Facilities", x = "Division", title = "Facilities with Ag Activities by Regional Division") +
-  coord_flip()
+#division1 <- ggplot(data=All_Divisions_count, aes(x=division, y=facilities_confirmed_ag)) +
+#  geom_col(aes(fill=`Activity Category`)) + 
+#  labs(y = "Number of Correctional Facilities", x = "Division", title = "Facilities with Ag Activities by Regional Division") +
+#  coord_flip()
 
-ggsave("plot_ag_division1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+#ggsave("plot_ag_division1.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
 
 #Plot regions broken down by activity categories
-region2 <- ggplot(data=All_Regions_count, aes(x=`Activity Category`, y=facilities_confirmed_ag)) +
+#Using abbreviate for shorter labels, but could alternative use the following
+#shortlabs <- c("Animal Ag", "Crops & Silv", "Food Proc & Prod", "Hort & Land")
+region2 <- ggplot(data=All_Regions_cat, aes(x=`Activity Category`, y=facilities_cat_tot)) +
   geom_col(aes(fill=`region`)) +
   scale_fill_manual(values = manualviridis4) +
-  labs(y= "Number of Correctional Facilities", x = "Activity Type", fill = "Region", title = "State Correctional Facilities with Ag by Activity Type and Region")
+  labs(y= "State Operated Facilities", x = "Activity Type", fill = "Region", title = "State Correctional Facilities with Ag Activities", subtitle = "By Activity Type and Region") +
+  scale_x_discrete(labels = label_wrap(12))
 
-ggsave("plot_ag_region2.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+ggsave("plot_ag_region2.tiff", plot = last_plot(), device="tiff", dpi = 300, path = "./writing/eda_output/")
+
+#region2b <- ggplot(data=(All_Regions_count %>% filter(!`Activity Category` == "Other")), aes(x=`Activity Category`, y=facilities_confirmed_ag)) +
+#  geom_col(position = "dodge" , aes(fill=`region`)) +
+#  scale_fill_manual(values = manualviridis4) +
+#  labs(y= "State Operated Facilities", x = "Activity Type", fill = "Region", title = "State Correctional Facilities with Ag Activities", subtitle = "By Activity Type and Region") +
+#  scale_x_discrete(labels=abbreviate)
+
+#ggsave("plot_ag_region2b.tiff", plot = last_plot(), device="tiff", dpi = 1000, path = "./writing/eda_output/")
+
+#region2c <- ggplot(data=All_Regions_count) +
+#  geom_mosaic(aes(weight = facilities_confirmed_ag, x = product(`Activity Category`, region), fill = `Activity Category`))  +
+# scale_fill_viridis_d("facilities_confirmed_ag") +
+#  labs(x = "Activity Type", y = "State Operated Facilities", title = "State Correctional Facilities with Ag Activities", subtitle = "By Activity Type and Region") 
+
+#ggsave("plot_ag_region2c.tiff", plot = last_plot(), device="tiff", dpi = 1000, path = "./writing/eda_output/")
+
+#region2d <- ggplot(data=All_Regions_count, aes(x=`region`, y=facilities_confirmed_ag)) +
+#  geom_col(position = "dodge", aes(fill=`Activity Category`)) +
+#  scale_fill_manual(values = manualviridis4) +
+#  labs(y= "State Operated Facilities", x = "Region", fill = "Activity Type", title = "State Correctional Facilities with Ag Activities", subtitle = "By Activity Type and Region") +
+#  theme_bw()
+
+#ggsave("plot_ag_region2d.tiff", plot = last_plot(), device="tiff", dpi = 1000, path = "./writing/eda_output/")
 
 #Plot divisions broken down by activity categories
 division2 <- ggplot(data=All_Divisions_count, aes(x=`Activity Category`, y=facilities_confirmed_ag)) +
@@ -922,7 +1282,7 @@ All_Regions_pct_category <- All_Regions_count %>%
   left_join((All_Regions_Confirmed_Ag_pct %>%
                 select(region, all_prisons)),
             by=c("region")) %>%
-  mutate(pct = confirmed_ag_prisons/all_prisons)
+  mutate(pct = facilities_confirmed_ag/all_prisons)
 
 #Plot
 region3 <- ggplot(All_Regions_pct_category, aes(x = `Activity Category`, y = pct, group = region)) +  
@@ -974,6 +1334,8 @@ ggsave("plot_ag_division4.png", plot = last_plot(), device="png", path = "./writ
 
 #Question 3. Why? What are the purposes of the activities?
 
+#####Check purposes -feed inmates vs. feeding inmates & change it all to feeding incarcerated individuals
+
 #Subset of all states  confirmed ag data with purpose not null
 #Need to make sure everyone has modified Purpose to exclude Culinary Arts
 All_States_purpose <-
@@ -998,13 +1360,33 @@ All_States_purpose_pivot <-
   All_States_purpose_separate %>%
   pivot_longer(cols=c(paste("Purpose",1:max_col_purpose, sep = "_")), names_to = "Temp", values_to = "Purpose") %>%
   select(-Temp) %>%
-  drop_na("Purpose")
-
-#Remove any blank entries
-All_States_purpose_pivot <-
-  All_States_purpose_pivot %>%
-  mutate(Purpose = str_trim(tolower(Purpose), side = "both")) %>%
+  drop_na("Purpose") %>%
+  mutate(Purpose = str_trim(str_to_lower(Purpose), side = "both")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "vocational training", "vocational")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "thearapy", "therapeutic")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "therapy", "therapeutic")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "educational", "education")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "education", "educational")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "recreational", "recreation")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "recreation", "recreational")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "feed inmates", "feeding incarcerated individuals")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "feeding inmates", "feeding incarcerated individuals")) %>%
+  mutate(Purpose = str_replace_all(Purpose, "unknown", "unspecified")) %>%
+  mutate(Purpose = str_to_title(Purpose)) %>%
   filter(Purpose != "")
+
+##MAKE CHANGES TO NUMBER IN EQUATION
+All_Region_purpose_count <- All_States_purpose_pivot %>%
+  group_by(Purpose, region) %>%
+  summarise(facilities_with_purpose_reg = n()) %>%
+  left_join( All_States_purpose_pivot %>%
+      group_by(Purpose) %>%
+      summarise(facilities_with_purpose_us = n()), by = "Purpose") %>%
+  mutate(pct_purpose = facilities_with_purpose_reg/facilities_with_purpose_us) %>%
+  left_join(All_Regions_Confirmed_Ag_pct %>%
+              select(facilities_confirmed_ag, region), by = "region") %>%
+ mutate(pct_region_of_us =  facilities_confirmed_ag/650) %>%
+  mutate(representation_factor = pct_purpose/pct_region_of_us)
 
 view(All_States_purpose_pivot %>%
        filter(Purpose == "cost savings" & region == "South"))
@@ -1019,17 +1401,18 @@ region4 <- ggplot(data=All_States_purpose_pivot, aes(x = fct_rev(fct_infreq(Purp
   geom_bar(aes(fill=region)) +
   labs(y = "Number of Correctional Facilities", x = "Purpose", fill = "Region", title = "Purpose of Ag Activities by Region") +
   scale_fill_manual(values=manualviridis4) +
+  theme(axis.text = element_text(size=12)) +
   coord_flip()
 
-ggsave("plot_ag_region4.png", plot = last_plot(), device = "png", path = "./writing/eda_output/")
+ggsave("plot_ag_region4.tiff", plot = last_plot(), device = "tiff", dpi = 500, path = "./writing/eda_output/")
 
-ggplot(data=All_States_purpose_pivot, aes(x = fct_rev(fct_infreq(Purpose)))) +
-  geom_bar(aes(fill=region)) +
-  labs(y = "Number of Correctional Facilities", x = "Purpose", fill = "Region", title = "Purpose of Ag Activities by Region") +
-  scale_fill_manual(values=testcolorsplasma2) +
-  coord_flip()
+#ggplot(data=All_States_purpose_pivot, aes(x = fct_rev(fct_infreq(Purpose)))) +
+#  geom_bar(aes(fill=region)) +
+#  labs(y = "Number of Correctional Facilities", x = "Purpose", fill = "Region", title = "Purpose of Ag Activities by Region") +
+#  scale_fill_manual(values=testcolorsplasma2) +
+#  coord_flip()
 
-ggsave("plot_ag_region4plasmamanual.png", plot = last_plot(), device = "png", path = "./writing/eda_output/")
+#ggsave("plot_ag_region4plasmamanual.png", plot = last_plot(), device = "png", path = "./writing/eda_output/")
 
 #Plot regions broken down by purposes - not using
 #region5 <- ggplot(data=All_States_purpose_pivot, aes(region, ..count..)) +
@@ -1404,16 +1787,16 @@ ggsave("plot_census_ag_region1.png", plot = last_plot(), device = "png", path = 
 #same plot with viridis color palette
 ggplot(data=da24642.0001.filter.ag, aes(V208)) +
   geom_bar(aes(fill=region)) +
-  labs(y = "State Operated Facilities", x = "Farming/Ag Work Requirements", fill = "Region", title = "2005 U.S. Census of Prisons", subtitle = "Farming/Agriculture Work Requirements") +
+  labs(y = "State Operated Facilities", x = "Farming/Ag Work Requirements", fill = "Region", title = "Census of State and Federal Adult Correctional Facilities, 2005", subtitle = "Farming/Agriculture Work Requirements") +
   scale_fill_viridis(discrete = TRUE)
 
 #Plot regions broken down by work reqs
 ggplot(data=da24642.0001.filter.ag, aes(region, ..count..)) +
   geom_bar(aes(fill=V208)) +
-  scale_fill_viridis_d() +
-  labs(y = "State Operated Facilities", x = "Region", title = "2005 U.S. Census of Prisons", subtitle = "Farming/Agriculture Work Requirements", fill = "Work Reqs")
+  scale_fill_viridis_d(labels = c("No", "Yes")) +
+  labs(y = "State Operated Facilities", x = "Region", title = "Census of State and Federal Adult Correctional Facilities, 2005", subtitle = "Farming/Agriculture Work Requirements", fill = "Work Requirements")
 
-ggsave("plot_census_ag_region2.png", plot = last_plot(), device="png", path = "./writing/eda_output/")
+ggsave("plot_census_ag_region2.tiff", plot = last_plot(), device="tiff", dpi=300, path = "./writing/eda_output/")
 
 #Question: What are the 2005 census facility functions?
 #From 2005 Census Question 4. "What are the functions of this facility? Mark ( X) all that apply."

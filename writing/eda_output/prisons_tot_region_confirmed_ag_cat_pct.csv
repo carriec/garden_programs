@@ -1,0 +1,17 @@
+region,Activity Category,facilities_cat_tot,facilities_tot,pct
+Midwest,Animal Agriculture,21,235,0.08936170212765958
+Midwest,Crops & Silviculture,13,235,0.05531914893617021
+Midwest,Food Processing & Production,12,235,0.05106382978723404
+Midwest,Horticulture & Landscaping,154,235,0.6553191489361702
+Northeast,Animal Agriculture,7,153,0.0457516339869281
+Northeast,Crops & Silviculture,3,153,0.0196078431372549
+Northeast,Food Processing & Production,3,153,0.0196078431372549
+Northeast,Horticulture & Landscaping,66,153,0.43137254901960786
+South,Animal Agriculture,132,555,0.23783783783783785
+South,Crops & Silviculture,146,555,0.26306306306306304
+South,Food Processing & Production,30,555,0.05405405405405406
+South,Horticulture & Landscaping,254,555,0.45765765765765765
+West,Animal Agriculture,33,157,0.21019108280254778
+West,Crops & Silviculture,24,157,0.15286624203821655
+West,Food Processing & Production,25,157,0.1592356687898089
+West,Horticulture & Landscaping,86,157,0.5477707006369427

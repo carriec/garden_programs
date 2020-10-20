@@ -34,6 +34,8 @@ data/raw_data/
 data/hifld_data/
 # COVID-19 behind bars data
 data/covid-19_behind_bars_data/
+# COVID-19 behind bars script
+scripts/covid-19_behind_bars.R
 # Slides
 slides/
 # Literature and annotated bibliographies
