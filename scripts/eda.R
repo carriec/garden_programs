@@ -239,60 +239,10 @@ All_States_join <- All_States_join %>%
          (ID.PrisonAg == 1090 ~ 10001874,
            TRUE ~ FACILITYID))
 
-########Importing new HIFLD Data (September 2020)########
-
-#HIFLD Prison Boundaries data
-#file_js = FROM_GeoJson(url_file_string = "https://opendata.arcgis.com/datasets/2d6109d4127d458eaf0958e4c5296b67_0.geojson", Average_Coordinates = TRUE)
-#class(file_js)
-#file_js
-hifld<-getURL("https://opendata.arcgis.com/datasets/2d6109d4127d458eaf0958e4c5296b67_0.geojson")
-hifld <- st_read(hifld)
-
-#View shapefile spatial metadata:
-#Geometry type
-st_geometry_type(hifld)
-#Coordinate reference system
-st_crs(hifld)
-#Extent of area
-st_bbox(hifld)
-#View all metadata and attributes
-hifld
-
-#Quick plot
-ggplot() + 
-  geom_sf(data = hifld, size = 0.5, color = "black", fill = "cyan1") + 
-  ggtitle("Boundary Plot") + 
-  coord_sf()
-
-#Convert HIFLD spatial data to data frame and save as Rdata
-hifld.no_sf <- as.data.frame(hifld) 
-class(hifld.no_sf) 
-saveRDS(hifld.no_sf, file = "data/hifld_data/2020-09-28/hifld_no_sf.Rds")
-rm(hifld)
+########Using HIFLD Data (September 2020)########
 
 #Load
 hifld.no_sf <- readRDS(file = "data/hifld_data/2020-09-28/hifld_no_sf.Rds")
-
-########Checking for updated FACILITYID from HIFLD since February 2020########
-#Note: Although in general, FACILITYID did not change from February to September 2020, some changes were made
-
-hifld.comparison <- hifld.no_sf %>%
-  select(FID, FACILITYID, NAME, STATE, TYPE, STATUS) %>%
-  full_join((hifld_no_sf_20200215 %>%
-               select(FID, FACILITYID, NAME, STATE, TYPE, STATUS)), by = "FACILITYID")
-
-#Look at joins with the same FACILITYID but different name
-view(hifld.comparison %>%
-       filter (TYPE.x == "STATE" | TYPE.y == "STATE") %>%
-       filter(NAME.x != NAME.y))
-#Result of review: Need to manually update MCF - Moose Lake, Minnesota Sex Offender Program - Moose Lake
-
-#Update FACILITYID in All_States_join so that it now aligns with September 2020 HIFLD download
-All_States_join <- All_States_join %>%
-  mutate(FACILITYID = case_when
-         ( ID.PrisonAg == 69 ~ 10001319,  #MCF - Moose Lake
-           ID.PrisonAg == 79 ~ 10007020,  #Minnesota Sex Offender Program - Moose Lake
-           TRUE ~ FACILITYID))
 
 ###################Adding new record linkage####################3
 
