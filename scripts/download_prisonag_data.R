@@ -6,7 +6,7 @@ library(readxl)
 #List of files in Google Drive
 #files <- drive_find()
 
-###########October 6, 2020 and onward Import###########
+###########February 8, 2021 Import###########
 
 #Import Becca's spreadsheets
 becca <- drive_get(as_id("https://docs.google.com/spreadsheets/d/1Z3bVdLkiYJFrm4UA4lZwftrOLqdRhd0-/"))
